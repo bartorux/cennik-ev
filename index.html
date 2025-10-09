@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Opłacalności Ładowania EV - Polska 2025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #1a365d;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .lightning-icon {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, #e0f2fe 0%, #f0f9ff 100%);
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #334155;
+            font-size: 0.95em;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .settings-panel {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .settings-section {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .settings-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            color: #1e40af;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-label {
+            display: block;
+            color: #475569;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .input-with-unit {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="number"], input[type="range"] {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        input[type="range"] {
+            padding: 0;
+        }
+
+        .range-value {
+            min-width: 80px;
+            text-align: right;
+            font-weight: bold;
+            color: #1e40af;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .checkbox-item:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .checkbox-item.selected {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+
+        .checkbox-item input[type="checkbox"], .checkbox-item input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            flex: 1;
+            color: #334155;
+            font-size: 0.95em;
+        }
+
+        .subscription-badge {
+            background: #fbbf24;
+            color: #78350f;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+
+        .results-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .best-option {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
+        }
+
+        .best-option h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .best-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .best-detail-item {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .detail-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .operators-comparison {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .comparison-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .comparison-title {
+            font-size: 1.4em;
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+        }
+
+        .view-btn {
+            padding: 8px 16px;
+            border: none;
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .view-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .operators-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .operator-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .operator-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .operator-card.recommended {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        }
+
+        .rank-badge {
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: #3b82f6;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .rank-badge.first {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        }
+
+        .operator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .operator-name {
+            font-size: 1.3em;
+            color: #1e40af;
+            font-weight: bold;
+        }
+
+        .promo-indicator {
+            background: #ef4444;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        .price-breakdown {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        .price-item:last-child {
+            margin-bottom: 0;
+            padding-top: 10px;
+            border-top: 1px solid #e2e8f0;
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #1e40af;
+        }
+
+        .savings-chart {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .update-info {
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .update-icon {
+            font-size: 1.5em;
+        }
+
+        .update-text {
+            flex: 1;
+        }
+
+        .update-title {
+            font-weight: 600;
+            color: #78350f;
+            margin-bottom: 5px;
+        }
+
+        .update-description {
+            color: #92400e;
+            font-size: 0.9em;
+        }
+
+        .refresh-btn {
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+
+        .refresh-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 968px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .settings-panel {
+                position: static;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .operators-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span class="lightning-icon">⚡</span>
+                Kalkulator Opłacalności Ładowania EV
+            </h1>
+            
+            <div class="status-bar">
+                <div class="status-item">
+                    <span class="status-dot"></span>
+                    <span id="currentDate">Ładowanie danych...</span>
+                </div>
+                <div class="status-item">
+                    <span>📊</span>
+                    <span id="lastUpdate">Ostatnia aktualizacja: --</span>
+                </div>
+                <div class="status-item">
+                    <span>🎯</span>
+                    <span id="activePromos">Sprawdzanie promocji...</span>
+                </div>
+                <button class="refresh-btn" onclick="refreshPrices()" id="refreshBtn">
+                    🔄 Odśwież ceny
+                </button>
+            </div>
+        </div>
+
+        <div id="errorContainer"></div>
+
+        <div class="main-grid">
+            <div class="settings-panel">
+                <div class="settings-section">
+                    <div class="section-title">
+                        <span>⚡</span>
+                        Tryb kalkulatora
+                    </div>
+                    <div class="view-toggle" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button class="view-btn active" id="modeInstant" onclick="setMode('instant')">
+                            🚗 Jednorazowe ładowanie
+                        </button>
+                        <button class="view-btn" id="modeMonthly" onclick="setMode('monthly')">
+                            📅 Miesięczne zużycie
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-section" id="instantSection">
+                    <div class="section-title">
+                        <span>🔋</span>
+                        Ile chcesz doładować?
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="instantKwh">
+                            Ilość kWh do naładowania
+                        </label>
+                        <div class="input-with-unit">
+                            <input type="number" id="instantKwh" min="0" max="150" value="40" step="5">
+                            <span class="range-value">kWh</span>
+                        </div>
+                        <small style="color: #64748b; display: block; margin-top: 8px;">
+                            💡 Średnie auto ma baterię 40-80 kWh
+                        </small>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">
+                            Typ ładowarki
+                        </label>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="display: flex; align-items: center; padding: 10px; background: #f8fafc; border-radius: 8px; cursor: pointer;">
+                                <input type="radio" name="chargerType" value="ac" style="margin-right: 10px;">
+                                <div>
+                                    <strong>AC</strong> - wolne (do 22 kW)
+                                    <br><small style="color: #64748b;">Hotel, dom, parking</small>
+                                </div>
+                            </label>
+                            <label style="display: flex; align-items: center; padding: 10px; background: #f8fafc; border-radius: 8px; cursor: pointer;">
+                                <input type="radio" name="chargerType" value="dc" checked style="margin-right: 10px;">
+                                <div>
+                                    <strong>DC</strong> - szybkie (do 50 kW)
+                                    <br><small style="color: #64748b;">Stacje w trasie</small>
+                                </div>
+                            </label>
+                            <label style="display: flex; align-items: center; padding: 10px; background: #f8fafc; border-radius: 8px; cursor: pointer;">
+                                <input type="radio" name="chargerType" value="hpc" style="margin-right: 10px;">
+                                <div>
+                                    <strong>HPC</strong> - ultraszybkie (>100 kW)
+                                    <br><small style="color: #64748b;">Autostrady</small>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section" id="monthlySection" style="display: none;">
+                    <div class="section-title">
+                        <span>📊</span>
+                        Miesięczne zużycie energii
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="monthlyUsage">
+                            Przewidywane ładowanie (kWh/miesiąc)
+                        </label>
+                        <div class="input-with-unit">
+                            <input type="range" id="monthlyUsageRange" min="0" max="1000" value="200" step="10">
+                            <input type="number" id="monthlyUsage" min="0" max="1000" value="200" step="10">
+                            <span class="range-value">kWh</span>
+                        </div>
+                        <small style="color: #64748b; display: block; margin-top: 8px;">
+                            Średnie auto: ~15 kWh/100km
+                        </small>
+                    </div>
+                </div>
+
+                <div class="settings-section" id="chargingTypesSection" style="display: none;">
+                    <div class="section-title">
+                        <span>🔌</span>
+                        Rodzaje ładowania
+                    </div>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="useAC" checked>
+                            <label for="useAC" class="checkbox-label">
+                                <strong>AC - wolne</strong> (do 22 kW) - domowe, hotelowe
+                            </label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="useDC" checked>
+                            <label for="useDC" class="checkbox-label">
+                                <strong>DC - szybkie</strong> (do 50 kW) - w trasie
+                            </label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="useHPC">
+                            <label for="useHPC" class="checkbox-label">
+                                <strong>HPC - ultraszybkie</strong> (>100 kW) - autostrady
+                            </label>
+                        </div>
+                    </div>
+                    <small style="color: #64748b; display: block; margin-top: 12px;">
+                        💡 Zaznacz typy ładowania, z których korzystasz. Zakładamy proporcje: AC 60%, DC 30%, HPC 10% (jeśli wybrane).
+                    </small>
+                </div>
+
+                <div class="settings-section" id="subscriptionsSection">
+                    <div class="section-title">
+                        <span>💳</span>
+                        <span id="subscriptionsSectionTitle">Wybór planu taryfowego</span>
+                    </div>
+                    <small style="color: #64748b; display: block; margin-bottom: 12px;" id="subscriptionsSectionHint">
+                        Wybierz plan dla każdego operatora. Płatne abonamenty opłacają się przy większym zużyciu.
+                    </small>
+                    <div class="checkbox-group" id="subscriptionsList">
+                        <!-- Dynamically generated -->
+                    </div>
+                </div>
+
+                <div class="settings-section" id="promosSection">
+                    <div class="section-title">
+                        <span>🎯</span>
+                        Promocje czasowe
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="usePromos" checked onchange="togglePromos()">
+                        <label for="usePromos" class="checkbox-label">
+                            Uwzględnij promocje czasowe (jeśli dostępne)
+                        </label>
+                    </div>
+                    <small style="color: #64748b; display: block; margin-top: 8px;" id="promosHint">
+                        💡 Obecnie dostępna promocja Orlen -25% (do 3.11.2025)
+                    </small>
+                </div>
+
+                <div class="settings-section">
+                    <div class="section-title">
+                        <span>💾</span>
+                        Ustawienia
+                    </div>
+                    <button onclick="saveSettings()" style="width: 100%; padding: 10px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                        Zapisz preferencje
+                    </button>
+                    <button onclick="resetSettings()" style="width: 100%; padding: 10px; background: #64748b; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; margin-top: 10px;">
+                        Resetuj ustawienia
+                    </button>
+                </div>
+            </div>
+
+            <div class="results-panel">
+                <div class="best-option" id="bestOption">
+                    <h2 id="bestOptionTitle">💰 Koszt ładowania</h2>
+                    <div class="best-details" id="bestDetails">
+                        <!-- Dynamically generated -->
+                    </div>
+                </div>
+
+                <div class="operators-comparison">
+                    <div class="comparison-header">
+                        <h3 class="comparison-title">Ranking operatorów</h3>
+                    </div>
+                    <div class="operators-grid" id="operatorsGrid">
+                        <!-- Dynamically generated -->
+                    </div>
+                </div>
+
+                <div class="savings-chart" id="chartSection" style="display: none;">
+                    <h3 class="comparison-title">Analiza opłacalności przy różnym zużyciu</h3>
+                    <div class="chart-container">
+                        <canvas id="savingsChart" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+
+                <div class="update-info">
+                    <div class="update-icon">⚠️</div>
+                    <div class="update-text">
+                        <div class="update-title">Informacje o cennikach</div>
+                        <div class="update-description">
+                            Ceny są pobierane automatycznie z oficjalnych źródeł operatorów co 6 godzin. 
+                            Niektóre promocje mogą pojawiać się w trakcie miesiąca. 
+                            Zawsze sprawdź aktualne ceny przed ładowaniem.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dane cenowe - będą ładowane z pliku JSON
+        let pricingData = null;
+
+        // User settings stored in localStorage
+        let userSettings = {
+            mode: 'instant',
+            instantKwh: 40,
+            chargerType: 'dc',
+            monthlyUsage: 200,
+            useAC: true,
+            useDC: true,
+            useHPC: false,
+            subscriptions: [],
+            usePromos: true
+        };
+
+        // Ładowanie danych cenowych z pliku JSON
+        async function loadPricingData() {
+            try {
+                // Próba załadowania lokalnego pliku
+                const response = await fetch('./pricing-data.json?t=' + Date.now());
+                
+                if (!response.ok) {
+                    throw new Error('Nie można pobrać danych cenowych');
+                }
+                
+                pricingData = await response.json();
+                
+                // Zaktualizuj status
+                updateStatusBar();
+                
+                // Wygeneruj listę subskrypcji
+                generateSubscriptionsList();
+                
+                // Przelicz i wyświetl
+                calculateAndDisplay();
+                
+                // Usuń komunikat o błędzie jeśli był
+                document.getElementById('errorContainer').innerHTML = '';
+                
+                console.log('✅ Dane cenowe załadowane pomyślnie');
+                
+            } catch (error) {
+                console.error('❌ Błąd ładowania danych:', error);
+                
+                // Pokaż błąd użytkownikowi
+                showError('Nie można załadować aktualnych cenników. Używam danych awaryjnych.');
+                
+                // Użyj danych awaryjnych
+                useFallbackData();
+            }
+        }
+
+        // Dane awaryjne w przypadku błędu
+        function useFallbackData() {
+            pricingData = {
+                lastUpdate: new Date().toISOString(),
+                operators: {
+                    greenway: {
+                        name: 'GreenWay',
+                        color: '#10b981',
+                        subscriptions: [
+                            {
+                                id: 'greenway_standard',
+                                name: 'Energia Standard',
+                                monthlyCost: 0,
+                                prices: {ac: 1.95, dc: 3.15, hpc: 3.15},
+                                benefits: []
+                            },
+                            {
+                                id: 'greenway_plus',
+                                name: 'Energia Plus',
+                                monthlyCost: 29.99,
+                                prices: {ac: 1.75, dc: 2.40, hpc: 2.40},
+                                benefits: ['Dla średniego zużycia 50-200 kWh/mies']
+                            },
+                            {
+                                id: 'greenway_max',
+                                name: 'Energia Max',
+                                monthlyCost: 79.99,
+                                prices: {ac: 1.60, dc: 2.10, hpc: 2.10},
+                                benefits: ['Dla wysokiego zużycia >200 kWh/mies']
+                            }
+                        ],
+                        promotions: []
+                    },
+                    orlen: {
+                        name: 'Orlen Charge',
+                        color: '#ef4444',
+                        subscriptions: [
+                            {
+                                id: 'orlen_standard',
+                                name: 'Bez abonamentu',
+                                monthlyCost: 0,
+                                prices: {ac: 1.95, dc: 2.69, hpc: 3.19},
+                                benefits: []
+                            }
+                        ],
+                        promotions: []
+                    }
+                }
+            };
+            
+            updateStatusBar();
+            generateSubscriptionsList();
+            calculateAndDisplay();
+        }
+
+        // Pokazywanie błędów
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `
+                <div class="error-message">
+                    <strong>⚠️ Uwaga:</strong> ${message}
+                </div>
+            `;
+        }
+
+        // Load saved settings
+        function loadSettings() {
+            const saved = localStorage.getItem('evChargingSettings');
+            if (saved) {
+                try {
+                    userSettings = JSON.parse(saved);
+                    applySettings();
+                } catch (e) {
+                    console.error('Błąd ładowania ustawień:', e);
+                }
+            }
+        }
+
+        function applySettings() {
+            setMode(userSettings.mode, false);
+
+            document.getElementById('instantKwh').value = userSettings.instantKwh;
+            const chargerRadios = document.getElementsByName('chargerType');
+            chargerRadios.forEach(radio => {
+                radio.checked = radio.value === userSettings.chargerType;
+            });
+
+            document.getElementById('monthlyUsage').value = userSettings.monthlyUsage;
+            document.getElementById('monthlyUsageRange').value = userSettings.monthlyUsage;
+            document.getElementById('useAC').checked = userSettings.useAC;
+            document.getElementById('useDC').checked = userSettings.useDC;
+            document.getElementById('useHPC').checked = userSettings.useHPC;
+            document.getElementById('usePromos').checked = userSettings.usePromos !== false;
+
+            if (pricingData) {
+                generateSubscriptionsList();
+                updatePromosHint();
+            }
+        }
+
+        function saveSettings() {
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            alert('✅ Ustawienia zapisane!');
+        }
+
+        function resetSettings() {
+            localStorage.removeItem('evChargingSettings');
+            userSettings = {
+                mode: 'instant',
+                instantKwh: 40,
+                chargerType: 'dc',
+                monthlyUsage: 200,
+                useAC: true,
+                useDC: true,
+                useHPC: false,
+                subscriptions: [],
+                usePromos: true
+            };
+            applySettings();
+            calculateAndDisplay();
+        }
+
+        function togglePromos() {
+            userSettings.usePromos = document.getElementById('usePromos').checked;
+            console.log('Promocje:', userSettings.usePromos ? 'włączone' : 'wyłączone');
+            updatePromosHint();
+            calculateAndDisplay();
+        }
+
+        function updatePromosHint() {
+            if (!pricingData) return;
+
+            const promosHint = document.getElementById('promosHint');
+            if (!promosHint) return;
+
+            const activePromos = [];
+            const now = new Date();
+
+            Object.values(pricingData.operators).forEach(operator => {
+                if (operator.promotions) {
+                    operator.promotions.forEach(promo => {
+                        const validFrom = new Date(promo.validFrom);
+                        const validTo = new Date(promo.validTo);
+
+                        if (now >= validFrom && now <= validTo) {
+                            const endDate = validTo.toLocaleDateString('pl-PL');
+                            activePromos.push(`${operator.name}: ${promo.name} (do ${endDate})`);
+                        }
+                    });
+                }
+            });
+
+            if (activePromos.length > 0) {
+                promosHint.innerHTML = `💡 Obecnie dostępne: ${activePromos.join(', ')}`;
+            } else {
+                promosHint.innerHTML = '💡 Brak aktywnych promocji czasowych';
+            }
+        }
+
+        // Mode switching
+        function setMode(mode, recalculate = true) {
+            userSettings.mode = mode;
+
+            document.getElementById('modeInstant').classList.toggle('active', mode === 'instant');
+            document.getElementById('modeMonthly').classList.toggle('active', mode === 'monthly');
+
+            document.getElementById('instantSection').style.display = mode === 'instant' ? 'block' : 'none';
+            document.getElementById('monthlySection').style.display = mode === 'monthly' ? 'block' : 'none';
+            document.getElementById('chargingTypesSection').style.display = mode === 'monthly' ? 'block' : 'none';
+            document.getElementById('chartSection').style.display = mode === 'monthly' ? 'block' : 'none';
+
+            // Zaktualizuj tytuł sekcji subskrypcji
+            const subsTitle = document.getElementById('subscriptionsSectionTitle');
+            const subsHint = document.getElementById('subscriptionsSectionHint');
+            if (subsTitle && subsHint) {
+                if (mode === 'instant') {
+                    subsTitle.textContent = 'Wybór cennika';
+                    subsHint.textContent = 'Wybierz cennik dla każdego operatora (standardowy lub promocyjny).';
+                } else {
+                    subsTitle.textContent = 'Wybór planu taryfowego';
+                    subsHint.textContent = 'Wybierz plan dla każdego operatora. Płatne abonamenty opłacają się przy większym zużyciu.';
+                }
+            }
+
+            const title = document.getElementById('bestOptionTitle');
+            if (title) {
+                title.innerHTML = mode === 'instant' ? '💰 Koszt ładowania' : '🏆 Najlepsza opcja dla Ciebie';
+            }
+
+            if (recalculate && pricingData) {
+                calculateAndDisplay();
+            }
+        }
+
+        // Generate subscriptions list
+        function generateSubscriptionsList() {
+            if (!pricingData) return;
+
+            const container = document.getElementById('subscriptionsList');
+            container.innerHTML = '';
+
+            Object.entries(pricingData.operators).forEach(([key, operator]) => {
+                const header = document.createElement('div');
+                header.style.cssText = 'font-weight: 600; color: #1e40af; margin: 15px 0 10px 0; padding-top: 10px; border-top: 1px solid #e2e8f0;';
+                header.textContent = operator.name;
+                if (container.children.length === 0) {
+                    header.style.borderTop = 'none';
+                    header.style.paddingTop = '0';
+                    header.style.marginTop = '0';
+                }
+                container.appendChild(header);
+
+                // Renderuj wszystkie subskrypcje
+                const radioGroup = document.createElement('div');
+                radioGroup.style.cssText = 'margin-bottom: 15px;';
+                renderSubscriptionRadios(radioGroup, key, operator.subscriptions, operator);
+                container.appendChild(radioGroup);
+            });
+        }
+
+        function renderSubscriptionRadios(container, operatorKey, subscriptions, operator) {
+            subscriptions.forEach((sub, index) => {
+                const item = document.createElement('div');
+                item.className = 'checkbox-item';
+
+                const isChecked = userSettings.subscriptions.includes(sub.id) ||
+                                 (userSettings.subscriptions.length === 0 && sub.monthlyCost === 0 && index === 0);
+
+                if (isChecked) {
+                    item.classList.add('selected');
+                }
+
+                const benefitsText = sub.benefits && sub.benefits.length > 0 ?
+                    `<br><small style="color: #64748b;">${sub.benefits.join(' • ')}</small>` : '';
+
+                const priceInfo = sub.monthlyCost > 0 ?
+                    `<span class="subscription-badge">${sub.monthlyCost} zł/mies</span>` :
+                    '<span style="color: #10b981; font-size: 0.85em;">Bez opłat</span>';
+
+                item.innerHTML = `
+                    <input type="radio"
+                           name="${operatorKey}_plan"
+                           id="${sub.id}"
+                           ${isChecked ? 'checked' : ''}
+                           onchange="selectSubscription('${operatorKey}', '${sub.id}')">
+                    <label for="${sub.id}" class="checkbox-label" style="width: 100%;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>${sub.name}</span>
+                            ${priceInfo}
+                        </div>
+                        ${benefitsText}
+                    </label>
+                `;
+
+                item.onclick = (e) => {
+                    if (e.target.type !== 'radio') {
+                        const radio = item.querySelector('input[type="radio"]');
+                        radio.checked = true;
+                        selectSubscription(operatorKey, sub.id);
+                    }
+                };
+
+                container.appendChild(item);
+            });
+        }
+
+        function selectSubscription(operatorKey, subId) {
+            if (!pricingData) return;
+
+            console.log(`Zmiana subskrypcji: operator=${operatorKey}, subId=${subId}`);
+
+            const operator = pricingData.operators[operatorKey];
+
+            // Usuń wszystkie subskrypcje tego operatora z listy wybranych
+            operator.subscriptions.forEach(sub => {
+                const index = userSettings.subscriptions.indexOf(sub.id);
+                if (index > -1) {
+                    userSettings.subscriptions.splice(index, 1);
+                    console.log(`Usunięto: ${sub.id}`);
+                }
+            });
+
+            // Dodaj nowo wybraną subskrypcję
+            userSettings.subscriptions.push(subId);
+            console.log(`Dodano: ${subId}`);
+            console.log(`Aktualna lista subskrypcji:`, userSettings.subscriptions);
+
+            // Zaktualizuj UI - podświetl wybraną opcję
+            document.querySelectorAll(`input[name="${operatorKey}_plan"]`).forEach(radio => {
+                const item = radio.closest('.checkbox-item');
+                if (item) {
+                    if (radio.id === subId) {
+                        item.classList.add('selected');
+                    } else {
+                        item.classList.remove('selected');
+                    }
+                }
+            });
+
+            // Przelicz i wyświetl wyniki
+            calculateAndDisplay();
+        }
+
+        // Calculate costs for each operator
+        function calculateCosts() {
+            if (!pricingData) return [];
+            
+            const results = [];
+            const currentDate = new Date();
+
+            const kwhAmount = userSettings.mode === 'instant' ? 
+                userSettings.instantKwh : 
+                userSettings.monthlyUsage;
+
+            let acRatio = 0, dcRatio = 0, hpcRatio = 0;
+            
+            if (userSettings.mode === 'instant') {
+                switch(userSettings.chargerType) {
+                    case 'ac': acRatio = 1.0; break;
+                    case 'dc': dcRatio = 1.0; break;
+                    case 'hpc': hpcRatio = 1.0; break;
+                }
+            } else {
+                const useAC = userSettings.useAC;
+                const useDC = userSettings.useDC;
+                const useHPC = userSettings.useHPC;
+                
+                if (!useAC && !useDC && !useHPC) {
+                    return results;
+                } else if (useAC && !useDC && !useHPC) {
+                    acRatio = 1.0;
+                } else if (!useAC && useDC && !useHPC) {
+                    dcRatio = 1.0;
+                } else if (!useAC && !useDC && useHPC) {
+                    hpcRatio = 1.0;
+                } else if (useAC && useDC && !useHPC) {
+                    acRatio = 0.67;
+                    dcRatio = 0.33;
+                } else if (useAC && !useDC && useHPC) {
+                    acRatio = 0.85;
+                    hpcRatio = 0.15;
+                } else if (!useAC && useDC && useHPC) {
+                    dcRatio = 0.75;
+                    hpcRatio = 0.25;
+                } else if (useAC && useDC && useHPC) {
+                    acRatio = 0.60;
+                    dcRatio = 0.30;
+                    hpcRatio = 0.10;
+                }
+            }
+
+            Object.entries(pricingData.operators).forEach(([key, operator]) => {
+                let subscriptionsToShow = [];
+
+                // ZAWSZE bierz wybraną przez użytkownika subskrypcję
+                const selectedSub = operator.subscriptions.find(sub =>
+                    userSettings.subscriptions.includes(sub.id)
+                );
+
+                if (userSettings.mode === 'instant') {
+                    // W trybie jednorazowym użyj wybranej subskrypcji BEZ abonamentu
+                    // Jeśli wybrano opcję z abonamentem, weź pierwszą bez abonamentu
+                    if (selectedSub && selectedSub.monthlyCost === 0) {
+                        subscriptionsToShow = [selectedSub];
+                    } else {
+                        const firstFree = operator.subscriptions.find(s => s.monthlyCost === 0);
+                        subscriptionsToShow = firstFree ? [firstFree] : [];
+                    }
+                } else {
+                    // W trybie miesięcznym użyj wybranej subskrypcji (może mieć abonament)
+                    subscriptionsToShow = [selectedSub || operator.subscriptions[0]];
+                }
+
+                subscriptionsToShow.forEach(subscription => {
+                    let prices = {...subscription.prices};
+                    let isPromo = false;
+                    let promoName = '';
+
+                    // Check for active promotions (temporary price drops) - tylko jeśli użytkownik włączył promocje
+                    if (userSettings.usePromos && operator.promotions && operator.promotions.length > 0) {
+                        operator.promotions.forEach(promo => {
+                            const validFrom = new Date(promo.validFrom);
+                            const validTo = new Date(promo.validTo);
+
+                            if (currentDate >= validFrom && currentDate <= validTo) {
+                                prices = {...promo.prices};
+                                isPromo = true;
+                                promoName = promo.name;
+                            }
+                        });
+                    }
+
+                    let energyCost = 0;
+                    
+                    if (prices.ac && acRatio > 0) {
+                        energyCost += (kwhAmount * acRatio) * prices.ac;
+                    }
+                    if (prices.dc && dcRatio > 0) {
+                        energyCost += (kwhAmount * dcRatio) * prices.dc;
+                    }
+                    if (prices.hpc && hpcRatio > 0) {
+                        energyCost += (kwhAmount * hpcRatio) * prices.hpc;
+                    }
+
+                    const totalCost = userSettings.mode === 'instant' ? 
+                        energyCost : 
+                        energyCost + subscription.monthlyCost;
+
+                    let breakEvenPoint = null;
+                    if (userSettings.mode === 'monthly' && subscription.monthlyCost > 0) {
+                        const standardSub = operator.subscriptions.find(s => s.monthlyCost === 0);
+                        if (standardSub) {
+                            const avgSavingPerKwh = 
+                                acRatio * (standardSub.prices.ac - prices.ac) +
+                                dcRatio * (standardSub.prices.dc - prices.dc) +
+                                hpcRatio * (standardSub.prices.hpc - prices.hpc);
+                            
+                            if (avgSavingPerKwh > 0) {
+                                breakEvenPoint = Math.ceil(subscription.monthlyCost / avgSavingPerKwh);
+                            }
+                        }
+                    }
+
+                    results.push({
+                        operator: operator.name,
+                        operatorKey: key,
+                        subscription: subscription.name,
+                        subscriptionId: subscription.id,
+                        hasSubscription: userSettings.subscriptions.includes(subscription.id),
+                        monthlyCost: subscription.monthlyCost,
+                        energyCost: energyCost,
+                        totalCost: totalCost,
+                        prices: prices,
+                        isPromo: isPromo,
+                        promoName: promoName,
+                        color: operator.color,
+                        benefits: subscription.benefits || [],
+                        breakEvenPoint: breakEvenPoint,
+                        selectedChargerType: userSettings.chargerType
+                    });
+                });
+            });
+
+            results.sort((a, b) => a.totalCost - b.totalCost);
+            return results;
+        }
+
+        // Display results
+        function calculateAndDisplay() {
+            if (!pricingData) return;
+            
+            const results = calculateCosts();
+            
+            if (results.length > 0) {
+                const best = results[0];
+                const bestDetails = document.getElementById('bestDetails');
+                
+                if (userSettings.mode === 'instant') {
+                    const chargerTypeLabel = {
+                        'ac': 'AC (wolne)',
+                        'dc': 'DC (szybkie)',
+                        'hpc': 'HPC (ultraszybkie)'
+                    }[userSettings.chargerType];
+
+                    const chargerPrice = best.selectedChargerType === 'ac' ? best.prices.ac :
+                                       best.selectedChargerType === 'dc' ? best.prices.dc :
+                                       best.prices.hpc;
+
+                    const isPromoSub = best.subscriptionId.includes('_promo');
+
+                    bestDetails.innerHTML = `
+                        <div class="best-detail-item">
+                            <div class="detail-label">Najtańszy operator</div>
+                            <div class="detail-value">
+                                ${best.operator}
+                                ${best.isPromo || isPromoSub ? `<span style="font-size: 0.6em; background: rgba(255,255,255,0.3); padding: 2px 6px; border-radius: 4px; margin-left: 5px;">PROMO</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="best-detail-item">
+                            <div class="detail-label">Typ ładowania</div>
+                            <div class="detail-value">${chargerTypeLabel}</div>
+                        </div>
+                        <div class="best-detail-item">
+                            <div class="detail-label">Cena za 1 kWh</div>
+                            <div class="detail-value">${chargerPrice.toFixed(2)} zł</div>
+                        </div>
+                        <div class="best-detail-item">
+                            <div class="detail-label">Całkowity koszt<br><small style="opacity: 0.8; font-weight: normal;">(przy ${userSettings.instantKwh} kWh)</small></div>
+                            <div class="detail-value" style="color: #fbbf24; font-size: 1.3em;">${best.totalCost.toFixed(2)} zł</div>
+                        </div>
+                    `;
+                } else {
+                    let breakEvenInfo = '';
+                    if (best.breakEvenPoint) {
+                        breakEvenInfo = `
+                        <div class="best-detail-item">
+                            <div class="detail-label">Próg opłacalności</div>
+                            <div class="detail-value">${best.breakEvenPoint} kWh/mies</div>
+                        </div>`;
+                    }
+                    
+                    bestDetails.innerHTML = `
+                        <div class="best-detail-item">
+                            <div class="detail-label">Operator</div>
+                            <div class="detail-value">${best.operator}</div>
+                        </div>
+                        <div class="best-detail-item">
+                            <div class="detail-label">Typ cennika</div>
+                            <div class="detail-value">
+                                ${best.subscription}
+                                ${best.isPromo ? `<span style="font-size: 0.6em; background: rgba(255,255,255,0.3); padding: 2px 6px; border-radius: 4px; margin-left: 5px;">PROMO</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="best-detail-item">
+                            <div class="detail-label">Koszt energii</div>
+                            <div class="detail-value">${best.energyCost.toFixed(2)} zł</div>
+                        </div>
+                        <div class="best-detail-item">
+                            <div class="detail-label">Całkowity koszt</div>
+                            <div class="detail-value">${best.totalCost.toFixed(2)} zł/mies</div>
+                        </div>
+                        ${breakEvenInfo}
+                    `;
+                }
+            }
+
+            const grid = document.getElementById('operatorsGrid');
+            grid.innerHTML = '';
+            
+            const maxResults = userSettings.mode === 'instant' ? results.length : 8;
+            
+            results.slice(0, maxResults).forEach((result, index) => {
+                const card = document.createElement('div');
+                card.className = 'operator-card';
+                if (index === 0) card.classList.add('recommended');
+                
+                const rankClass = index === 0 ? 'first' : '';
+                
+                if (userSettings.mode === 'instant') {
+                    const chargerPrice = userSettings.chargerType === 'ac' ? result.prices.ac :
+                                       userSettings.chargerType === 'dc' ? result.prices.dc :
+                                       result.prices.hpc;
+                    
+                    const isPromoSubscription = result.subscriptionId.includes('_promo');
+
+                    card.innerHTML = `
+                        <div class="rank-badge ${rankClass}">#${index + 1}</div>
+                        <div class="operator-header">
+                            <div class="operator-name">${result.operator}</div>
+                            ${result.isPromo || isPromoSubscription ? `<div class="promo-indicator">PROMO</div>` : ''}
+                        </div>
+                        <div style="color: #64748b; font-size: 0.9em; margin-bottom: 15px;">
+                            ${result.subscription}
+                        </div>
+                        <div class="price-breakdown">
+                            <div class="price-item">
+                                <span>Cena za 1 kWh:</span>
+                                <span style="color: #1e40af; font-weight: 600; font-size: 1.05em;">${chargerPrice ? chargerPrice.toFixed(2) + ' zł' : 'Niedostępne'}</span>
+                            </div>
+                            <div class="price-item" style="background: #f0fdf4; margin: 10px -15px -15px -15px; padding: 15px; border-radius: 0 0 10px 10px;">
+                                <span><strong>Całkowity koszt:</strong><br><small style="color: #64748b; font-weight: normal;">(przy ${userSettings.instantKwh} kWh)</small></span>
+                                <span><strong style="color: #059669; font-size: 1.3em;">${result.totalCost.toFixed(2)} zł</strong></span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    let breakEvenBadge = '';
+                    if (result.breakEvenPoint) {
+                        const currentUsage = userSettings.monthlyUsage;
+                        if (currentUsage >= result.breakEvenPoint) {
+                            breakEvenBadge = '<span style="color: #10b981; font-size: 0.85em;">✓ Opłaca się przy Twoim zużyciu</span>';
+                        } else {
+                            breakEvenBadge = `<span style="color: #f59e0b; font-size: 0.85em;">Opłaca się od ${result.breakEvenPoint} kWh/mies</span>`;
+                        }
+                    }
+
+                    const isPromoSubscription = result.subscriptionId.includes('_promo');
+
+                    card.innerHTML = `
+                        <div class="rank-badge ${rankClass}">#${index + 1}</div>
+                        <div class="operator-header">
+                            <div class="operator-name">${result.operator}</div>
+                            ${result.isPromo || isPromoSubscription ? `<div class="promo-indicator">PROMO</div>` : ''}
+                        </div>
+                        <div style="color: #64748b; font-size: 0.9em; margin-bottom: 15px;">
+                            ${result.subscription}
+                            ${result.hasSubscription ? '<span style="color: #10b981; margin-left: 5px;">✓ Wybrany</span>' : ''}
+                            ${breakEvenBadge ? `<br>${breakEvenBadge}` : ''}
+                        </div>
+                        <div class="price-breakdown">
+                            ${result.prices.ac ? `<div class="price-item"><span>AC:</span><span>${result.prices.ac.toFixed(2)} zł/kWh</span></div>` : ''}
+                            ${result.prices.dc ? `<div class="price-item"><span>DC:</span><span>${result.prices.dc.toFixed(2)} zł/kWh</span></div>` : ''}
+                            ${result.prices.hpc ? `<div class="price-item"><span>HPC:</span><span>${result.prices.hpc.toFixed(2)} zł/kWh</span></div>` : ''}
+                            ${result.monthlyCost > 0 ? `<div class="price-item"><span>Abonament:</span><span>${result.monthlyCost.toFixed(2)} zł</span></div>` : ''}
+                            <div class="price-item"><span>Razem:</span><span>${result.totalCost.toFixed(2)} zł/mies</span></div>
+                        </div>
+                    `;
+                }
+                
+                grid.appendChild(card);
+            });
+
+            if (userSettings.mode === 'monthly') {
+                updateChart();
+            }
+        }
+
+        // Chart functionality
+        function updateChart() {
+            if (!pricingData) return;
+            
+            const canvas = document.getElementById('savingsChart');
+            const ctx = canvas.getContext('2d');
+            
+            const width = canvas.width = canvas.offsetWidth;
+            const height = canvas.height = canvas.offsetHeight;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(40, height - 30);
+            ctx.lineTo(width - 20, height - 30);
+            ctx.moveTo(40, 20);
+            ctx.lineTo(40, height - 30);
+            ctx.stroke();
+            
+            const usageLevels = [0, 50, 100, 150, 200, 250, 300, 400, 500];
+            const operatorLines = {};
+            
+            const originalUsage = userSettings.monthlyUsage;
+            const originalSubs = [...userSettings.subscriptions];
+            
+            Object.entries(pricingData.operators).forEach(([key, operator]) => {
+                operator.subscriptions.forEach(sub => {
+                    const lineKey = `${key}_${sub.id}`;
+                    operatorLines[lineKey] = {
+                        name: `${operator.name} - ${sub.name}`,
+                        color: operator.color,
+                        isDashed: sub.monthlyCost > 0,
+                        values: []
+                    };
+                    
+                    usageLevels.forEach(usage => {
+                        userSettings.monthlyUsage = usage;
+                        if (sub.monthlyCost > 0) {
+                            userSettings.subscriptions = [sub.id];
+                        } else {
+                            userSettings.subscriptions = [];
+                        }
+                        
+                        const costs = calculateCosts();
+                        const operatorCost = costs.find(c => c.subscriptionId === sub.id);
+                        operatorLines[lineKey].values.push(operatorCost ? operatorCost.totalCost : 0);
+                    });
+                });
+            });
+            
+            userSettings.monthlyUsage = originalUsage;
+            userSettings.subscriptions = originalSubs;
+            
+            ctx.strokeStyle = '#f0f4f8';
+            ctx.lineWidth = 0.5;
+            for (let i = 1; i < 5; i++) {
+                const y = height - 30 - (i * (height - 50) / 4);
+                ctx.beginPath();
+                ctx.moveTo(40, y);
+                ctx.lineTo(width - 20, y);
+                ctx.stroke();
+            }
+            
+            Object.entries(operatorLines).forEach(([key, line]) => {
+                ctx.strokeStyle = line.color;
+                ctx.lineWidth = 2;
+                
+                if (line.isDashed) {
+                    ctx.setLineDash([5, 5]);
+                } else {
+                    ctx.setLineDash([]);
+                }
+                
+                ctx.beginPath();
+                
+                line.values.forEach((value, index) => {
+                    const x = 40 + (index * (width - 60) / (usageLevels.length - 1));
+                    const maxCost = 800;
+                    const y = height - 30 - (value * (height - 50) / maxCost);
+                    
+                    if (index === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+                
+                ctx.stroke();
+            });
+            
+            ctx.setLineDash([]);
+            
+            ctx.fillStyle = '#64748b';
+            ctx.font = '11px sans-serif';
+            
+            usageLevels.forEach((level, index) => {
+                const x = 40 + (index * (width - 60) / (usageLevels.length - 1));
+                ctx.fillText(level + ' kWh', x - 20, height - 10);
+            });
+            
+            for (let i = 0; i <= 4; i++) {
+                const value = i * 200;
+                const y = height - 30 - (i * (height - 50) / 4);
+                ctx.fillText(value + ' zł', 5, y + 5);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('instantKwh').addEventListener('input', (e) => {
+            userSettings.instantKwh = parseFloat(e.target.value) || 0;
+            if (userSettings.mode === 'instant') {
+                calculateAndDisplay();
+            }
+        });
+
+        document.getElementsByName('chargerType').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                userSettings.chargerType = e.target.value;
+                if (userSettings.mode === 'instant') {
+                    calculateAndDisplay();
+                }
+            });
+        });
+
+        document.getElementById('monthlyUsage').addEventListener('input', (e) => {
+            userSettings.monthlyUsage = parseFloat(e.target.value) || 0;
+            document.getElementById('monthlyUsageRange').value = userSettings.monthlyUsage;
+            if (userSettings.mode === 'monthly') {
+                calculateAndDisplay();
+            }
+        });
+
+        document.getElementById('monthlyUsageRange').addEventListener('input', (e) => {
+            userSettings.monthlyUsage = parseFloat(e.target.value);
+            document.getElementById('monthlyUsage').value = userSettings.monthlyUsage;
+            if (userSettings.mode === 'monthly') {
+                calculateAndDisplay();
+            }
+        });
+
+        document.getElementById('useAC').addEventListener('change', (e) => {
+            userSettings.useAC = e.target.checked;
+            if (userSettings.mode === 'monthly') {
+                calculateAndDisplay();
+            }
+        });
+
+        document.getElementById('useDC').addEventListener('change', (e) => {
+            userSettings.useDC = e.target.checked;
+            if (userSettings.mode === 'monthly') {
+                calculateAndDisplay();
+            }
+        });
+
+        document.getElementById('useHPC').addEventListener('change', (e) => {
+            userSettings.useHPC = e.target.checked;
+            if (userSettings.mode === 'monthly') {
+                calculateAndDisplay();
+            }
+        });
+
+        // Refresh prices from JSON
+        async function refreshPrices() {
+            const btn = document.getElementById('refreshBtn');
+            btn.innerHTML = '<span class="loading-spinner"></span> Pobieranie...';
+            btn.disabled = true;
+            
+            try {
+                await loadPricingData();
+                btn.innerHTML = '✅ Zaktualizowano!';
+                setTimeout(() => {
+                    btn.innerHTML = '🔄 Odśwież ceny';
+                    btn.disabled = false;
+                }, 2000);
+            } catch (error) {
+                console.error('Error:', error);
+                btn.innerHTML = '❌ Błąd pobierania';
+                setTimeout(() => {
+                    btn.innerHTML = '🔄 Odśwież ceny';
+                    btn.disabled = false;
+                }, 2000);
+            }
+        }
+
+        // Update status bar
+        function updateStatusBar() {
+            const now = new Date();
+            document.getElementById('currentDate').textContent = 
+                now.toLocaleDateString('pl-PL', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            
+            if (pricingData && pricingData.lastUpdate) {
+                const updateDate = new Date(pricingData.lastUpdate);
+                const hoursAgo = Math.floor((now - updateDate) / (1000 * 60 * 60));
+                
+                if (hoursAgo < 1) {
+                    document.getElementById('lastUpdate').textContent = 'Ostatnia aktualizacja: przed chwilą';
+                } else if (hoursAgo < 24) {
+                    document.getElementById('lastUpdate').textContent = `Ostatnia aktualizacja: ${hoursAgo}h temu`;
+                } else {
+                    const daysAgo = Math.floor(hoursAgo / 24);
+                    document.getElementById('lastUpdate').textContent = `Ostatnia aktualizacja: ${daysAgo} dni temu`;
+                }
+            }
+            
+            let activePromos = [];
+            if (pricingData && pricingData.operators) {
+                Object.values(pricingData.operators).forEach(operator => {
+                    if (operator.promotions) {
+                        operator.promotions.forEach(promo => {
+                            const validFrom = new Date(promo.validFrom);
+                            const validTo = new Date(promo.validTo);
+
+                            if (now >= validFrom && now <= validTo) {
+                                activePromos.push(`${operator.name}: ${promo.name}`);
+                            }
+                        });
+                    }
+                });
+            }
+
+            const usePromos = document.getElementById('usePromos')?.checked !== false;
+
+            if (activePromos.length > 0 && usePromos) {
+                document.getElementById('activePromos').textContent = `Aktywne promocje: ${activePromos.join(', ')}`;
+            } else if (activePromos.length > 0 && !usePromos) {
+                document.getElementById('activePromos').textContent = `Promocje dostępne (wyłączone w ustawieniach)`;
+            } else {
+                document.getElementById('activePromos').textContent = 'Brak aktywnych promocji czasowych';
+            }
+        }
+
+        // Initialize defaults
+        function initializeDefaults() {
+            if (userSettings.subscriptions.length === 0 && pricingData) {
+                Object.entries(pricingData.operators).forEach(([key, operator]) => {
+                    // Wybierz pierwszą opcję bez abonamentu
+                    const defaultSub = operator.subscriptions.find(s => s.monthlyCost === 0);
+
+                    if (defaultSub) {
+                        userSettings.subscriptions.push(defaultSub.id);
+                        console.log(`Domyślnie wybrano: ${defaultSub.id} dla ${key}`);
+                    }
+                });
+                console.log('Wybrane subskrypcje:', userSettings.subscriptions);
+            }
+        }
+
+        // Initialize app
+        async function init() {
+            loadSettings();
+            await loadPricingData();
+            initializeDefaults();
+            updateStatusBar();
+            calculateAndDisplay();
+        }
+
+        // Start app
+        init();
+    </script>
+</body>
+</html>

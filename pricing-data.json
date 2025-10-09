@@ -1,0 +1,81 @@
+{
+  "lastUpdate": "2025-10-09T13:19:26.392388",
+  "operators": {
+    "greenway": {
+      "name": "GreenWay",
+      "color": "#10b981",
+      "subscriptions": [
+        {
+          "id": "greenway_standard",
+          "name": "Energia Standard",
+          "monthlyCost": 0,
+          "prices": {
+            "ac": 1.6,
+            "dc": 2.1,
+            "hpc": 2.1
+          },
+          "benefits": []
+        },
+        {
+          "id": "greenway_plus",
+          "name": "Energia Plus",
+          "monthlyCost": 29.99,
+          "prices": {
+            "ac": 1.75,
+            "dc": 2.4,
+            "hpc": 2.4
+          },
+          "benefits": [
+            "Dla średniego zużycia 50-200 kWh/mies"
+          ]
+        },
+        {
+          "id": "greenway_max",
+          "name": "Energia Max",
+          "monthlyCost": 79.99,
+          "prices": {
+            "ac": 1.6,
+            "dc": 2.1,
+            "hpc": 2.1
+          },
+          "benefits": [
+            "Dla wysokiego zużycia >200 kWh/mies"
+          ]
+        }
+      ],
+      "promotions": []
+    },
+    "orlen": {
+      "name": "Orlen Charge",
+      "color": "#ef4444",
+      "subscriptions": [
+        {
+          "id": "orlen_standard",
+          "name": "Bez abonamentu",
+          "monthlyCost": 0,
+          "prices": {
+            "ac": 1.95,
+            "dc": 2.89,
+            "hpc": 3.19
+          },
+          "benefits": []
+        }
+      ],
+      "promotions": [
+        {
+          "name": "Promocja cenowa -25%",
+          "validFrom": "2025-02-10",
+          "validTo": "2025-11-03",
+          "prices": {
+            "ac": 1.46,
+            "dc": 2.02,
+            "hpc": 2.39
+          },
+          "conditions": [
+            "Obowiązuje dla wszystkich użytkowników"
+          ]
+        }
+      ]
+    }
+  }
+}

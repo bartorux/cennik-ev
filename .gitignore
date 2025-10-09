@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Edytor promocji (PRYWATNY - nie publikuj!)
+edytor-promocji.html
+
+# Pliki testowe
+test_*.py
+*_test.py
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Środowisko
+.env
+.env.local
+secrets.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Tymczasowe
+*.tmp
+*.bak
+*.backup
+temp/
+
+# Selenium
+geckodriver.log
+chromedriver.log
+
+# Aktualizacja htmla (trzymamy tylko index.html)
+updated-html.html

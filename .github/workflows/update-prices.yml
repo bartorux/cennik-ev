@@ -1,0 +1,61 @@
+name: Aktualizacja Cen EV
+
+on:
+  # Uruchom co 6 godzin
+  schedule:
+    - cron: '0 */6 * * *'
+
+  # Możliwość ręcznego uruchomienia
+  workflow_dispatch:
+
+jobs:
+  update-prices:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repozytorium
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Konfiguracja Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalacja zależności
+        run: |
+          pip install requests beautifulsoup4 PyPDF2 lxml
+
+      - name: Uruchom scraper
+        run: |
+          python scraper-python.py
+
+      - name: Sprawdź zmiany
+        id: check_changes
+        run: |
+          if git diff --quiet pricing-data.json; then
+            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "Brak zmian w cenach"
+          else
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "Wykryto zmiany w cenach!"
+            git diff pricing-data.json
+          fi
+
+      - name: Commit i push zmian
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git add pricing-data.json
+          git commit -m "🤖 Automatyczna aktualizacja cen $(date +'%Y-%m-%d %H:%M')"
+          git push
+
+      - name: Podsumowanie
+        run: |
+          if [ "${{ steps.check_changes.outputs.changes }}" == "true" ]; then
+            echo "✅ Ceny zaktualizowane i opublikowane"
+          else
+            echo "ℹ️ Ceny bez zmian"
+          fi
