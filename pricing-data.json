@@ -1,5 +1,5 @@
 {
-  "lastUpdate": "2025-10-09T15:13:18.020560",
+  "lastUpdate": "2025-10-10T18:36:48.344749",
   "operators": {
     "greenway": {
       "name": "GreenWay",
@@ -81,49 +81,6 @@
           ]
         }
       ]
-    },
-    "ionity": {
-      "name": "IONITY",
-      "color": "#3b82f6",
-      "subscriptions": [
-        {
-          "id": "ionity_go",
-          "name": "IONITY Go",
-          "monthlyCost": 0,
-          "prices": {
-            "ac": 999,
-            "dc": 999,
-            "dc_mid": 999,
-            "hpc": 3.5
-          },
-          "benefits": ["Przez aplikację", "Bez abonamentu"]
-        },
-        {
-          "id": "ionity_motion",
-          "name": "IONITY Motion",
-          "monthlyCost": 28.5,
-          "prices": {
-            "ac": 999,
-            "dc": 999,
-            "dc_mid": 999,
-            "hpc": 2.5
-          },
-          "benefits": ["Dla średniego zużycia"]
-        },
-        {
-          "id": "ionity_power",
-          "name": "IONITY Power",
-          "monthlyCost": 51.5,
-          "prices": {
-            "ac": 999,
-            "dc": 999,
-            "dc_mid": 999,
-            "hpc": 2.05
-          },
-          "benefits": ["Najlepsza cena za kWh", "Dla dużego zużycia"]
-        }
-      ],
-      "promotions": []
     }
   }
 }
