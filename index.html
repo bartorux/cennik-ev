@@ -1900,29 +1900,36 @@
             }
             
             Object.entries(operatorLines).forEach(([key, line]) => {
+                // Sprawdź czy krzywa ma sens do narysowania
+                // Pomijamy jeśli wszystkie wartości to 0 (brak aktywnych typów ładowania)
+                const hasNonZeroValues = line.values.some(v => v > 0);
+                if (!hasNonZeroValues) {
+                    return; // Pomiń tę krzywą
+                }
+
                 ctx.strokeStyle = line.color;
                 ctx.lineWidth = 2;
-                
+
                 if (line.isDashed) {
                     ctx.setLineDash([5, 5]);
                 } else {
                     ctx.setLineDash([]);
                 }
-                
+
                 ctx.beginPath();
-                
+
                 line.values.forEach((value, index) => {
                     const x = 40 + (index * (width - 60) / (usageLevels.length - 1));
                     const maxCost = 800;
                     const y = height - 30 - (value * (height - 50) / maxCost);
-                    
+
                     if (index === 0) {
                         ctx.moveTo(x, y);
                     } else {
                         ctx.lineTo(x, y);
                     }
                 });
-                
+
                 ctx.stroke();
             });
             
