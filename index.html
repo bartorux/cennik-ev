@@ -640,6 +640,49 @@
                             Średnie auto: ~15 kWh/100km
                         </small>
                     </div>
+
+                    <div class="input-group" style="margin-top: 20px;">
+                        <label class="input-label">Proporcje typów ładowania</label>
+                        <small style="color: #64748b; display: block; margin-bottom: 12px;">
+                            Zaznacz typy których używasz. Suwaki automatycznie normalizują się do 100%.
+                        </small>
+
+                        <div class="checkbox-item" style="margin-bottom: 10px;">
+                            <input type="checkbox" id="useAC" checked>
+                            <label for="useAC" class="checkbox-label">AC - wolne (do 22 kW)</label>
+                        </div>
+                        <div id="acSliderContainer" style="margin-bottom: 15px; padding-left: 15px;">
+                            <input type="range" id="acPercentSlider" min="0" max="100" value="50" style="width: 100%;">
+                            <div style="text-align: right; color: #1e40af; font-weight: 600;" id="acPercentLabel">50%</div>
+                        </div>
+
+                        <div class="checkbox-item" style="margin-bottom: 10px;">
+                            <input type="checkbox" id="useDC" checked>
+                            <label for="useDC" class="checkbox-label">DC - szybkie (≤50 kW)</label>
+                        </div>
+                        <div id="dcSliderContainer" style="margin-bottom: 15px; padding-left: 15px;">
+                            <input type="range" id="dcPercentSlider" min="0" max="100" value="30" style="width: 100%;">
+                            <div style="text-align: right; color: #1e40af; font-weight: 600;" id="dcPercentLabel">30%</div>
+                        </div>
+
+                        <div class="checkbox-item" style="margin-bottom: 10px;">
+                            <input type="checkbox" id="useDCMid" checked>
+                            <label for="useDCMid" class="checkbox-label">DC Mid - szybkie (50-125 kW)</label>
+                        </div>
+                        <div id="dcMidSliderContainer" style="margin-bottom: 15px; padding-left: 15px;">
+                            <input type="range" id="dcMidPercentSlider" min="0" max="100" value="20" style="width: 100%;">
+                            <div style="text-align: right; color: #1e40af; font-weight: 600;" id="dcMidPercentLabel">20%</div>
+                        </div>
+
+                        <div class="checkbox-item" style="margin-bottom: 10px;">
+                            <input type="checkbox" id="useHPC">
+                            <label for="useHPC" class="checkbox-label">HPC - ultraszybkie (>125 kW)</label>
+                        </div>
+                        <div id="hpcSliderContainer" style="margin-bottom: 15px; padding-left: 15px; display: none;">
+                            <input type="range" id="hpcPercentSlider" min="0" max="100" value="0" style="width: 100%;">
+                            <div style="text-align: right; color: #1e40af; font-weight: 600;" id="hpcPercentLabel">0%</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="settings-section" id="monthlyViewSection" style="display: none;">
