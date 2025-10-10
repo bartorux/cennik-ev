@@ -1781,17 +1781,24 @@
                 return;
             }
 
-            // Show best option card in normal view
-            const bestCard = document.querySelector('.best-option');
-            if (bestCard) bestCard.style.display = 'block';
-
             const results = calculateCosts();
             console.log('📊 calculateAndDisplay: results =', results.length);
 
-            if (results.length > 0) {
+            // Pokaż "Najtańszy operator" tylko gdy:
+            // - Tryb instant (zawsze ma sens)
+            // - Tryb monthly + użytkownik wybrał abonamenty
+            const hasSelection = userSettings.mode === 'instant' ||
+                               (userSettings.mode === 'monthly' && userSettings.subscriptions.length > 0);
+
+            const bestCard = document.querySelector('.best-option');
+            if (bestCard) {
+                bestCard.style.display = hasSelection ? 'block' : 'none';
+            }
+
+            if (results.length > 0 && hasSelection) {
                 const best = results[0];
                 const bestDetails = document.getElementById('bestDetails');
-                
+
                 if (userSettings.mode === 'instant') {
                     const chargerTypeLabel = {
                         'ac': 'AC (wolne)',
@@ -1872,7 +1879,13 @@
                 const card = document.createElement('div');
                 card.className = 'operator-card';
                 if (index === 0) card.classList.add('recommended');
-                
+
+                // Podświetl wybrany plan zielonym obramowaniem
+                if (result.hasSubscription) {
+                    card.style.border = '2px solid #10b981';
+                    card.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                }
+
                 const rankClass = index === 0 ? 'first' : '';
                 
                 if (userSettings.mode === 'instant') {
