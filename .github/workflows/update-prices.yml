@@ -23,9 +23,16 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Instalacja zależności
+      - name: Instalacja Chrome i ChromeDriver
         run: |
-          pip install requests beautifulsoup4 PyPDF2 lxml
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
+          chromium-browser --version
+          chromedriver --version
+
+      - name: Instalacja zależności Python
+        run: |
+          pip install -r requirements.txt
 
       - name: Uruchom scraper
         run: |

@@ -55,83 +55,91 @@ class EVChargingPriceScraper:
             for page in pdf_reader.pages:
                 full_text += page.extract_text()
             
-            # Parsowanie cen - wzorce regex dla różnych planów
-            # Energia Standard (bez abonamentu)
-            standard_pattern = r"Energia Standard.*?AC.*?(\d+[,\.]\d+).*?DC.*?(\d+[,\.]\d+)"
-            standard_match = re.search(standard_pattern, full_text, re.DOTALL)
-            
-            if standard_match:
+            # Parsowanie cen - czytamy z tabeli
+            # Linia: "AC 2) 1,60 zł  1,75 zł  1,95 zł  2,05 zł"
+            # Kolumny: Max, Plus, Standard, Jednorazowe
+            ac_line_match = re.search(r'AC[^0-9]*(\d+[,\.]\d+)[^0-9]+(\d+[,\.]\d+)[^0-9]+(\d+[,\.]\d+)', full_text)
+            dc_line_match = re.search(r'DC[^0-9]*(\d+[,\.]\d+)[^0-9]+(\d+[,\.]\d+)[^0-9]+(\d+[,\.]\d+)', full_text)
+            fee_line_match = re.search(r'Miesięczna opłata[^0-9]*(\d+[,\.]\d+)[^0-9]+(\d+[,\.]\d+)', full_text, re.IGNORECASE)
+
+            if ac_line_match and dc_line_match:
+                # Kolumna 1 = Max, 2 = Plus, 3 = Standard
+                ac_max = float(ac_line_match.group(1).replace(',', '.'))
+                ac_plus = float(ac_line_match.group(2).replace(',', '.'))
+                ac_standard = float(ac_line_match.group(3).replace(',', '.'))
+
+                dc_max = float(dc_line_match.group(1).replace(',', '.'))
+                dc_plus = float(dc_line_match.group(2).replace(',', '.'))
+                dc_standard = float(dc_line_match.group(3).replace(',', '.'))
+
+                # Energia Standard (bez abonamentu)
                 greenway_data["subscriptions"].append({
                     "id": "greenway_standard",
                     "name": "Energia Standard",
                     "monthlyCost": 0,
                     "prices": {
-                        "ac": float(standard_match.group(1).replace(',', '.')),
-                        "dc": float(standard_match.group(2).replace(',', '.')),
-                        "hpc": float(standard_match.group(2).replace(',', '.'))  # GreenWay nie rozróżnia DC/HPC
+                        "ac": ac_standard,
+                        "dc": dc_standard,
+                        "dc_mid": dc_standard,
+                        "hpc": dc_standard
                     },
                     "benefits": []
                 })
             else:
-                # Fallback - domyślne wartości jeśli nie znaleziono w PDF
                 logger.warning("Nie znaleziono cen Standard w PDF, używam domyślnych")
                 greenway_data["subscriptions"].append({
                     "id": "greenway_standard",
                     "name": "Energia Standard",
                     "monthlyCost": 0,
-                    "prices": {"ac": 1.95, "dc": 3.15, "hpc": 3.15},
+                    "prices": {"ac": 1.95, "dc": 3.15, "dc_mid": 3.15, "hpc": 3.15},
                     "benefits": []
                 })
             
-            # Energia Plus
-            plus_pattern = r"Energia Plus.*?(\d+[,\.]\d+)\s*zł/mies.*?AC.*?(\d+[,\.]\d+).*?DC.*?(\d+[,\.]\d+)"
-            plus_match = re.search(plus_pattern, full_text, re.DOTALL)
-            
-            if plus_match:
+            # Energia Plus (używamy tych samych zmiennych co Standard)
+            if ac_line_match and dc_line_match and fee_line_match:
+                fee_max = float(fee_line_match.group(1).replace(',', '.'))
+                fee_plus = float(fee_line_match.group(2).replace(',', '.'))
+
                 greenway_data["subscriptions"].append({
                     "id": "greenway_plus",
                     "name": "Energia Plus",
-                    "monthlyCost": float(plus_match.group(1).replace(',', '.')),
+                    "monthlyCost": fee_plus,
                     "prices": {
-                        "ac": float(plus_match.group(2).replace(',', '.')),
-                        "dc": float(plus_match.group(3).replace(',', '.')),
-                        "hpc": float(plus_match.group(3).replace(',', '.'))
+                        "ac": ac_plus,
+                        "dc": dc_plus,
+                        "dc_mid": dc_plus,
+                        "hpc": dc_plus
                     },
                     "benefits": ["Dla średniego zużycia 50-200 kWh/mies"]
                 })
-            else:
-                logger.warning("Nie znaleziono cen Plus w PDF, używam domyślnych")
-                greenway_data["subscriptions"].append({
-                    "id": "greenway_plus",
-                    "name": "Energia Plus",
-                    "monthlyCost": 29.99,
-                    "prices": {"ac": 1.75, "dc": 2.40, "hpc": 2.40},
-                    "benefits": ["Dla średniego zużycia 50-200 kWh/mies"]
-                })
-            
-            # Energia Max
-            max_pattern = r"Energia Max.*?(\d+[,\.]\d+)\s*zł/mies.*?AC.*?(\d+[,\.]\d+).*?DC.*?(\d+[,\.]\d+)"
-            max_match = re.search(max_pattern, full_text, re.DOTALL)
-            
-            if max_match:
+
+                # Energia Max
                 greenway_data["subscriptions"].append({
                     "id": "greenway_max",
                     "name": "Energia Max",
-                    "monthlyCost": float(max_match.group(1).replace(',', '.')),
+                    "monthlyCost": fee_max,
                     "prices": {
-                        "ac": float(max_match.group(2).replace(',', '.')),
-                        "dc": float(max_match.group(3).replace(',', '.')),
-                        "hpc": float(max_match.group(3).replace(',', '.'))
+                        "ac": ac_max,
+                        "dc": dc_max,
+                        "dc_mid": dc_max,
+                        "hpc": dc_max
                     },
                     "benefits": ["Dla wysokiego zużycia >200 kWh/mies"]
                 })
             else:
-                logger.warning("Nie znaleziono cen Max w PDF, używam domyślnych")
+                logger.warning("Nie znaleziono cen Plus/Max w PDF, używam domyślnych")
+                greenway_data["subscriptions"].append({
+                    "id": "greenway_plus",
+                    "name": "Energia Plus",
+                    "monthlyCost": 29.99,
+                    "prices": {"ac": 1.75, "dc": 2.40, "dc_mid": 2.40, "hpc": 2.40},
+                    "benefits": ["Dla średniego zużycia 50-200 kWh/mies"]
+                })
                 greenway_data["subscriptions"].append({
                     "id": "greenway_max",
                     "name": "Energia Max",
                     "monthlyCost": 79.99,
-                    "prices": {"ac": 1.60, "dc": 2.10, "hpc": 2.10},
+                    "prices": {"ac": 1.60, "dc": 2.10, "dc_mid": 2.10, "hpc": 2.10},
                     "benefits": ["Dla wysokiego zużycia >200 kWh/mies"]
                 })
             
@@ -144,9 +152,24 @@ class EVChargingPriceScraper:
             return self.get_default_greenway_data()
     
     def scrape_orlen(self) -> Dict[str, Any]:
-        """Scrapuje cennik Orlen Charge ze strony WWW"""
+        """Scrapuje cennik Orlen Charge (wymaga Selenium)
+
+        Sprawdza dwie strony:
+        1. /cennik-promo/ - jeśli istnieje promocja, pobiera ceny standard + promo + daty
+        2. /cennik/ - fallback, pobiera tylko ceny standardowe
+        """
         logger.info("Rozpoczynam scrapowanie Orlen Charge...")
 
+        try:
+            from selenium import webdriver
+            from selenium.webdriver.chrome.options import Options
+            from selenium.webdriver.common.by import By
+            from selenium.webdriver.support.ui import WebDriverWait
+        except ImportError:
+            logger.warning("Selenium nie jest zainstalowany, używam danych domyślnych")
+            return self.get_default_orlen_data()
+
+        driver = None
         try:
             orlen_data = {
                 "name": "Orlen Charge",
@@ -155,92 +178,135 @@ class EVChargingPriceScraper:
                 "promotions": []
             }
 
-            # Scrapowanie cennika standardowego
-            standard_url = "https://orlencharge.pl/cennik/"
-            response = requests.get(standard_url, timeout=30)
-            response.raise_for_status()
+            # Konfiguracja Chrome headless
+            chrome_options = Options()
+            chrome_options.add_argument('--headless')
+            chrome_options.add_argument('--no-sandbox')
+            chrome_options.add_argument('--disable-dev-shm-usage')
+            chrome_options.add_argument('--disable-gpu')
+            chrome_options.add_argument('--window-size=1920,1080')
 
-            soup = BeautifulSoup(response.content, 'html.parser')
+            # W GitHub Actions używamy chromium-browser
+            import os
+            if os.environ.get('CI'):
+                chrome_options.binary_location = '/usr/bin/chromium-browser'
 
-            # Szukamy tabeli z cennikiem
+            logger.info("Uruchamiam Chrome...")
+            driver = webdriver.Chrome(options=chrome_options)
+            driver.set_page_load_timeout(30)
+
             standard_prices = {}
             promo_prices = {}
-            
-            # Różne selektory do wypróbowania
-            table_selectors = [
-                'table',
-                '.pricing-table',
-                'table.cennik',
-                '[class*="price"]',
-                '[class*="cennik"]'
-            ]
-            
-            table_found = False
-            for selector in table_selectors:
-                tables = soup.select(selector)
-                if tables:
-                    for table in tables:
-                        rows = table.find_all('tr')
-                        for row in rows:
-                            cells = row.find_all(['td', 'th'])
-                            if len(cells) >= 2:
-                                text = ' '.join([cell.get_text().strip() for cell in cells])
-                                
-                                # Parsowanie cen - standardowe i promocyjne
-                                if 'AC' in text and 'PLN' in text:
-                                    # Szukamy wszystkich cen w wierszu (może być standard i promo)
-                                    price_matches = re.findall(r'(\d+[,\.]\d+)', text)
-                                    if len(price_matches) >= 1:
-                                        standard_prices['ac'] = float(price_matches[0].replace(',', '.'))
-                                        table_found = True
-                                    if len(price_matches) >= 2:
-                                        promo_prices['ac'] = float(price_matches[1].replace(',', '.'))
+            promo_dates = None
 
-                                elif 'DC' in text and ('50' in text or 'do 50' in text) and 'PLN' in text:
-                                    price_matches = re.findall(r'(\d+[,\.]\d+)', text)
-                                    if len(price_matches) >= 1:
-                                        standard_prices['dc'] = float(price_matches[0].replace(',', '.'))
-                                        table_found = True
-                                    if len(price_matches) >= 2:
-                                        promo_prices['dc'] = float(price_matches[1].replace(',', '.'))
+            # NAJPIERW: Sprawdź stronę promocyjną
+            try:
+                promo_url = "https://orlencharge.pl/cennik-promo/"
+                logger.info(f"Sprawdzam stronę promocyjną: {promo_url}")
+                driver.get(promo_url)
 
-                                elif 'DC' in text and ('125' in text or 'powyżej' in text or '>' in text) and 'PLN' in text:
-                                    price_matches = re.findall(r'(\d+[,\.]\d+)', text)
-                                    if len(price_matches) >= 1:
-                                        standard_prices['hpc'] = float(price_matches[0].replace(',', '.'))
-                                        table_found = True
-                                    if len(price_matches) >= 2:
-                                        promo_prices['hpc'] = float(price_matches[1].replace(',', '.'))
-                
-                if table_found:
-                    break
-            
-            # Jeśli nie znaleziono w tabeli, szukaj w tekście
-            if not table_found:
-                body_text = soup.get_text()
+                WebDriverWait(driver, 15).until(
+                    lambda d: d.execute_script('return document.readyState') == 'complete'
+                )
 
-                # Wzorce dla różnych typów ładowania
-                ac_pattern = r"AC.*?(\d+[,\.]\d+)\s*(?:PLN|zł)/kWh"
-                dc_pattern = r"DC.*?≤\s*50.*?(\d+[,\.]\d+)\s*(?:PLN|zł)/kWh"
-                hpc_pattern = r"DC.*?>\s*125.*?(\d+[,\.]\d+)\s*(?:PLN|zł)/kWh"
+                import time
+                time.sleep(3)
 
-                ac_match = re.search(ac_pattern, body_text, re.IGNORECASE)
-                dc_match = re.search(dc_pattern, body_text, re.IGNORECASE)
-                hpc_match = re.search(hpc_pattern, body_text, re.IGNORECASE)
+                page_text = driver.find_element(By.TAG_NAME, "body").text
+                logger.info(f"Strona promocyjna: {len(page_text)} znaków")
 
-                if ac_match:
-                    standard_prices['ac'] = float(ac_match.group(1).replace(',', '.'))
-                if dc_match:
-                    standard_prices['dc'] = float(dc_match.group(1).replace(',', '.'))
-                if hpc_match:
-                    standard_prices['hpc'] = float(hpc_match.group(1).replace(',', '.'))
+                # Parsowanie cen PROMOCYJNYCH (tabela ma 2 kolumny: standard | promo)
+                # Format: "AC 1,95 PLN/kWh 1,46 PLN/kWh"
+                patterns = [
+                    # AC - 2 kolumny (standard, promo)
+                    (r'AC\s+(\d+[,\.]\d+)\s+PLN/kWh\s+(\d+[,\.]\d+)', 'ac'),
+                    # DC ≤50kW
+                    (r'DC[^0-9]*≤\s*50[^0-9]+(\d+[,\.]\d+)\s+PLN/kWh\s+(\d+[,\.]\d+)', 'dc'),
+                    # DC 50-125kW
+                    (r'DC[^0-9]+50[^0-9]+125[^0-9]+(\d+[,\.]\d+)\s+PLN/kWh\s+(\d+[,\.]\d+)', 'dc_mid'),
+                    # DC >125kW
+                    (r'DC[^0-9]+>\s*125[^0-9]+(\d+[,\.]\d+)\s+PLN/kWh\s+(\d+[,\.]\d+)', 'hpc'),
+                ]
 
-            # Jeśli nadal brak cen standardowych, użyj domyślnych
+                for pattern, price_key in patterns:
+                    match = re.search(pattern, page_text, re.IGNORECASE | re.DOTALL)
+                    if match:
+                        standard_prices[price_key] = float(match.group(1).replace(',', '.'))
+                        promo_prices[price_key] = float(match.group(2).replace(',', '.'))
+                        logger.info(f"{price_key}: standard={standard_prices[price_key]}, promo={promo_prices[price_key]}")
+
+                # Parsowanie dat promocji
+                # Format: "2 października 2025 r. godz. 9:00 do dnia 3 listopada 2025 r. godz. 9:00"
+                date_pattern = r'(\d{1,2})\s+(\w+)\s+(\d{4}).*?do dnia\s+(\d{1,2})\s+(\w+)\s+(\d{4})'
+                date_match = re.search(date_pattern, page_text, re.IGNORECASE)
+
+                if date_match:
+                    start_day, start_month_name, start_year, end_day, end_month_name, end_year = date_match.groups()
+
+                    # Mapowanie nazw miesięcy
+                    months = {
+                        'stycznia': '01', 'lutego': '02', 'marca': '03', 'kwietnia': '04',
+                        'maja': '05', 'czerwca': '06', 'lipca': '07', 'sierpnia': '08',
+                        'września': '09', 'października': '10', 'listopada': '11', 'grudnia': '12'
+                    }
+
+                    start_month = months.get(start_month_name.lower(), '01')
+                    end_month = months.get(end_month_name.lower(), '12')
+
+                    promo_dates = {
+                        'validFrom': f"{start_year}-{start_month}-{start_day.zfill(2)}",
+                        'validTo': f"{end_year}-{end_month}-{end_day.zfill(2)}"
+                    }
+                    logger.info(f"Promocja: {start_day} {start_month_name} - {end_day} {end_month_name} {end_year}")
+
+            except Exception as e:
+                logger.warning(f"Brak strony promocyjnej lub błąd: {e}")
+
+            # JEŚLI nie znaleziono cen, FALLBACK: /cennik/
             if not standard_prices:
-                logger.warning("Nie znaleziono cen Orlen na stronie, używam domyślnych")
-                standard_prices = {"ac": 1.95, "dc": 2.89, "hpc": 3.19}
+                try:
+                    url = "https://orlencharge.pl/cennik/"
+                    logger.info(f"Fallback: ładuję stronę standardową: {url}")
+                    driver.get(url)
 
-            # Dodaj cennik standardowy (tylko jeden)
+                    WebDriverWait(driver, 15).until(
+                        lambda d: d.execute_script('return document.readyState') == 'complete'
+                    )
+
+                    import time
+                    time.sleep(3)
+
+                    page_text = driver.find_element(By.TAG_NAME, "body").text
+                    logger.info(f"Strona standardowa: {len(page_text)} znaków")
+
+                    # Na stronie standardowej NIE MA promocji - tylko 1 kolumna
+                    patterns = [
+                        (r'AC[^0-9]*(\d+[,\.]\d+)\s+PLN/kWh', 'ac'),
+                        (r'DC[^0-9]*≤\s*50[^0-9]+(\d+[,\.]\d+)\s+PLN/kWh', 'dc'),
+                        (r'DC[^0-9]+50[^0-9]+125[^0-9]+(\d+[,\.]\d+)\s+PLN/kWh', 'dc_mid'),
+                        (r'DC[^0-9]+>\s*125[^0-9]+(\d+[,\.]\d+)\s+PLN/kWh', 'hpc'),
+                    ]
+
+                    for pattern, price_key in patterns:
+                        match = re.search(pattern, page_text, re.IGNORECASE)
+                        if match:
+                            standard_prices[price_key] = float(match.group(1).replace(',', '.'))
+                            logger.info(f"{price_key}: {standard_prices[price_key]}")
+
+                except Exception as e:
+                    logger.error(f"Błąd ładowania strony standardowej: {e}")
+
+            # Jeśli NADAL brak cen, użyj domyślnych
+            if not standard_prices:
+                logger.warning("Nie znaleziono żadnych cen, używam domyślnych")
+                standard_prices = {
+                    "ac": 1.95,
+                    "dc": 2.69,
+                    "dc_mid": 2.89,
+                    "hpc": 3.19
+                }
+
+            # Dodaj cennik standardowy
             orlen_data["subscriptions"].append({
                 "id": "orlen_standard",
                 "name": "Bez abonamentu",
@@ -249,97 +315,32 @@ class EVChargingPriceScraper:
                 "benefits": []
             })
 
-            # Jeśli znaleziono ceny promocyjne, dodaj jako promocję CZASOWĄ
-            if promo_prices and len(promo_prices) >= 3:
-                # Szukaj dat promocji na stronie
-                try:
-                    body_text = soup.get_text()
-                    # Wzorzec: "od 2.10 do 3.11 2025" lub podobne
-                    date_pattern = r'(\d{1,2})\.(\d{1,2}).*?(\d{1,2})\.(\d{1,2})\s*(\d{4})'
-                    date_match = re.search(date_pattern, body_text)
+            # Dodaj promocję jeśli znaleziono
+            if promo_prices and len(promo_prices) >= 4 and promo_dates:
+                orlen_data["promotions"].append({
+                    "name": "Promocja cenowa -25%",
+                    "validFrom": promo_dates['validFrom'],
+                    "validTo": promo_dates['validTo'],
+                    "prices": promo_prices,
+                    "conditions": ["Obowiązuje dla wszystkich użytkowników"]
+                })
+                logger.info(f"Dodano promocję: {len(promo_prices)} cen")
 
-                    if date_match:
-                        start_day, start_month, end_day, end_month, year = date_match.groups()
-
-                        orlen_data["promotions"].append({
-                            "name": "Promocja cenowa",
-                            "validFrom": f"{year}-{start_month.zfill(2)}-{start_day.zfill(2)}",
-                            "validTo": f"{year}-{end_month.zfill(2)}-{end_day.zfill(2)}",
-                            "prices": promo_prices,
-                            "conditions": ["Obowiązuje dla wszystkich użytkowników"]
-                        })
-                        logger.info(f"Znaleziono promocję Orlen od {start_day}.{start_month} do {end_day}.{end_month}.{year}")
-                    else:
-                        logger.warning("Znaleziono ceny promocyjne, ale nie wykryto dat")
-                except Exception as e:
-                    logger.warning(f"Błąd przy parsowaniu dat promocji: {e}")
-            
-            # Sprawdzanie promocji
-            promo_urls = [
-                "https://orlencharge.pl/cennik-promo/",
-                "https://orlencharge.pl/promocje/",
-                "https://orlencharge.pl/aktualnosci/"
-            ]
-            
-            for promo_url in promo_urls:
-                try:
-                    promo_response = requests.get(promo_url, timeout=30)
-                    if promo_response.status_code == 200:
-                        promo_soup = BeautifulSoup(promo_response.content, 'html.parser')
-                        promo_text = promo_soup.get_text()
-                        
-                        # Szukamy informacji o promocji
-                        promo_patterns = [
-                            r"promocja.*?(\d+)\s*%",
-                            r"taniej.*?(\d+)\s*%",
-                            r"-(\d+)\s*%",
-                            r"rabat.*?(\d+)\s*%"
-                        ]
-                        
-                        for pattern in promo_patterns:
-                            match = re.search(pattern, promo_text, re.IGNORECASE)
-                            if match:
-                                discount = int(match.group(1))
-                                
-                                # Szukamy dat
-                                date_pattern = r"(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})"
-                                dates = re.findall(date_pattern, promo_text)
-                                
-                                if dates and len(dates) >= 2:
-                                    start_date = f"{dates[0][2]}-{dates[0][1]:0>2}-{dates[0][0]:0>2}"
-                                    end_date = f"{dates[1][2]}-{dates[1][1]:0>2}-{dates[1][0]:0>2}"
-                                    
-                                    # Oblicz ceny promocyjne
-                                    promo_prices = {}
-                                    for key, value in prices.items():
-                                        promo_prices[key] = round(value * (1 - discount/100), 2)
-                                    
-                                    orlen_data["promotions"].append({
-                                        "name": f"Promocja -{discount}%",
-                                        "validFrom": start_date,
-                                        "validTo": end_date,
-                                        "prices": promo_prices,
-                                        "conditions": ["Dla wszystkich użytkowników aplikacji"]
-                                    })
-                                    
-                                    logger.info(f"Znaleziono promocję Orlen: -{discount}%")
-                                    break
-                        
-                        if orlen_data["promotions"]:
-                            break
-                            
-                except Exception as e:
-                    logger.warning(f"Nie można sprawdzić promocji Orlen z {promo_url}: {e}")
-            
-            logger.info(f"Orlen: znaleziono cennik {'z promocją' if orlen_data['promotions'] else 'bez promocji'}")
+            logger.info(f"Orlen: {len(orlen_data['subscriptions'])} plany, {len(orlen_data['promotions'])} promocje")
             return orlen_data
-            
+
         except Exception as e:
             logger.error(f"Błąd przy scrapowaniu Orlen: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             return self.get_default_orlen_data()
+
+        finally:
+            if driver:
+                driver.quit()
     
     def get_default_greenway_data(self) -> Dict[str, Any]:
-        """Zwraca domyślne dane GreenWay"""
+        """Zwraca domyślne dane GreenWay z dc_mid (duplikacja DC)"""
         return {
             "name": "GreenWay",
             "color": "#10b981",
@@ -348,21 +349,21 @@ class EVChargingPriceScraper:
                     "id": "greenway_standard",
                     "name": "Energia Standard",
                     "monthlyCost": 0,
-                    "prices": {"ac": 1.95, "dc": 3.15, "hpc": 3.15},
+                    "prices": {"ac": 1.95, "dc": 3.15, "dc_mid": 3.15, "hpc": 3.15},
                     "benefits": []
                 },
                 {
                     "id": "greenway_plus",
                     "name": "Energia Plus",
                     "monthlyCost": 29.99,
-                    "prices": {"ac": 1.75, "dc": 2.40, "hpc": 2.40},
+                    "prices": {"ac": 1.75, "dc": 2.40, "dc_mid": 2.40, "hpc": 2.40},
                     "benefits": ["Dla średniego zużycia 50-200 kWh/mies"]
                 },
                 {
                     "id": "greenway_max",
                     "name": "Energia Max",
                     "monthlyCost": 79.99,
-                    "prices": {"ac": 1.60, "dc": 2.10, "hpc": 2.10},
+                    "prices": {"ac": 1.60, "dc": 2.10, "dc_mid": 2.10, "hpc": 2.10},
                     "benefits": ["Dla wysokiego zużycia >200 kWh/mies"]
                 }
             ],
@@ -370,12 +371,7 @@ class EVChargingPriceScraper:
         }
     
     def get_default_orlen_data(self) -> Dict[str, Any]:
-        """Zwraca domyślne dane Orlen
-
-        UWAGA: Promocje Orlen są ładowane przez JavaScript i nie da się ich scrapować.
-        Aktualizuj ręcznie daty i ceny promocji gdy Orlen zmieni ofertę.
-        Sprawdź: https://orlencharge.pl/cennik/ (kliknij "Sprawdź cenę")
-        """
+        """Zwraca domyślne dane Orlen z 4 przedziałami DC"""
         return {
             "name": "Orlen Charge",
             "color": "#ef4444",
@@ -384,16 +380,26 @@ class EVChargingPriceScraper:
                     "id": "orlen_standard",
                     "name": "Bez abonamentu",
                     "monthlyCost": 0,
-                    "prices": {"ac": 1.95, "dc": 2.89, "hpc": 3.19},
+                    "prices": {
+                        "ac": 1.95,
+                        "dc": 2.69,
+                        "dc_mid": 2.89,
+                        "hpc": 3.19
+                    },
                     "benefits": []
                 }
             ],
             "promotions": [
                 {
                     "name": "Promocja cenowa -25%",
-                    "validFrom": "2025-02-10",
+                    "validFrom": "2025-10-02",
                     "validTo": "2025-11-03",
-                    "prices": {"ac": 1.46, "dc": 2.02, "hpc": 2.39},
+                    "prices": {
+                        "ac": 1.46,
+                        "dc": 2.02,
+                        "dc_mid": 2.17,
+                        "hpc": 2.39
+                    },
                     "conditions": ["Obowiązuje dla wszystkich użytkowników"]
                 }
             ]

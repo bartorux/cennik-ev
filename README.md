@@ -23,9 +23,11 @@ Porównywarka cen ładowania pojazdów elektrycznych w Polsce (GreenWay, Orlen C
 ### Funkcje:
 - ✅ **Tryb jednorazowy**: Oblicz koszt ładowania określonej ilości kWh
 - ✅ **Tryb miesięczny**: Porównaj koszty miesięczne z różnymi abonamentami
+- ✅ **4 prędkości ładowania**: AC, DC ≤50kW, DC 50-125kW, DC >125kW
+- ✅ **Dynamiczne suwaki proporcji**: Auto-normalizacja do 100%
 - ✅ **Promocje czasowe**: Automatyczne uwzględnianie aktywnych promocji
 - ✅ **Próg opłacalności**: Zobacz kiedy abonament się opłaca
-- ✅ **Zapisywanie ustawień**: Twoje preferencje są zapamiętywane
+- ✅ **Auto-save**: Wszystkie zmiany zapisują się automatycznie
 
 ### Obsługiwani operatorzy:
 - 🟢 **GreenWay** (3 plany: Standard, Plus, Max)
@@ -82,9 +84,10 @@ start edytor-promocji.html
 - **Nazwa**: np. "Promocja cenowa -25%"
 - **Data od**: np. 2025-02-10
 - **Data do**: np. 2025-11-03
-- **Ceny**:
+- **Ceny** (4 przedziały):
   - AC: 1.46
   - DC (≤50kW): 2.02
+  - DC Mid (50-125kW): 2.17
   - HPC (>125kW): 2.39
 - **Warunki**: "Obowiązuje dla wszystkich użytkowników"
 
@@ -160,28 +163,32 @@ Użytkownicy widzą checkbox **"Uwzględnij promocje czasowe"** w kalkulatorze.
 
 ## 3. 🤖 Jak uruchomić scraper automatycznie?
 
-### Opcja A: GitHub Actions (zalecana)
+### Opcja A: GitHub Actions (zalecana - AKTYWNA)
 
-**Utworzymy workflow który:**
-- Uruchamia się co 6 godzin
-- Pobiera ceny z GreenWay PDF
-- Commituje zmiany jeśli ceny się zmieniły
+**Workflow automatyczny (`.github/workflows/update-prices.yml`):**
+- ✅ Uruchamia się co 6 godzin
+- ✅ **GreenWay**: Scraper PDF → pobiera 3 plany z cennika
+- ✅ **Orlen**: Selenium scraper → sprawdza `/cennik-promo/` i `/cennik/`
+- ✅ Automatycznie wykrywa promocje i daty
+- ✅ Commituje zmiany tylko jeśli ceny się zmieniły
 
-**Plik:** `.github/workflows/update-prices.yml` (utworzymy poniżej)
+**Wymagania:**
+- Chrome/Chromium (zainstalowany automatycznie w GitHub Actions)
+- Selenium (w `requirements.txt`)
 
 ### Opcja B: Lokalnie (ręcznie)
 
 ```bash
 # 1. Zainstaluj zależności (raz)
-pip install -r requirements-txt.txt
+pip install -r requirements.txt
 
-# 2. Uruchom scraper
+# 2. Uruchom scraper (wymaga Chrome)
 python scraper-python.py
 
-# 3. Sprawdź czy coś się zmieniło
-git status
+# 3. Sprawdź co się zmieniło
+git diff pricing-data.json
 
-# 4. Commituj jeśli tak
+# 4. Commituj jeśli wszystko OK
 git add pricing-data.json
 git commit -m "Aktualizacja cen przez scraper"
 git push
@@ -226,13 +233,19 @@ CLAUDE.md              # Dokumentacja dla AI asystenta
 README.md              # Ta instrukcja
 ```
 
-### Prywatne (tylko lokalnie):
+### Backend (w repo, ale nie na Pages):
 ```
-edytor-promocji.html    # Edytor promocji (NIE COMMITUJ!)
-scraper-python.py       # Scraper cen z GreenWay/Orlen
-requirements-txt.txt    # Zależności Python
-test_selenium_orlen.py  # Testy scrapera
+scraper-python.py       # Scraper cen (Selenium + PDF)
+requirements.txt        # Zależności Python
+.github/workflows/      # GitHub Actions (auto-scraping co 6h)
 .gitignore             # Lista ignorowanych plików
+```
+
+### Pliki testowe (nie commitować):
+```
+edytor-promocji.html    # Edytor promocji (opcjonalny)
+scrape_orlen_final.py   # Testy Selenium
+orlen_*.txt            # Logi testowe
 ```
 
 ---
@@ -298,5 +311,25 @@ git push
 
 ---
 
+---
+
+## 🔄 Historia zmian
+
+### v2.0 (2025-10-09)
+- ✅ Dodano 4 prędkości ładowania (DC Mid 50-125kW)
+- ✅ Dynamiczne suwaki proporcji z auto-normalizacją
+- ✅ Auto-save wszystkich ustawień
+- ✅ Selenium scraper dla Orlen (promo + standardowe)
+- ✅ GitHub Actions z Chrome/ChromeDriver
+- ✅ Automatyczne wykrywanie promocji i dat
+
+### v1.0 (2025-10-02)
+- ✅ Tryb jednorazowy i miesięczny
+- ✅ GreenWay (3 plany) + Orlen
+- ✅ Promocje czasowe
+- ✅ Próg opłacalności
+
+---
+
 **Ostatnia aktualizacja:** 2025-10-09
-**Maintainer:** [Twoje imię]
+**Maintainer:** EV Charging Calculator Team

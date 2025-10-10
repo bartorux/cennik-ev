@@ -577,15 +577,22 @@
                             <label style="display: flex; align-items: center; padding: 10px; background: #f8fafc; border-radius: 8px; cursor: pointer;">
                                 <input type="radio" name="chargerType" value="dc" checked style="margin-right: 10px;">
                                 <div>
-                                    <strong>DC</strong> - szybkie (do 50 kW)
-                                    <br><small style="color: #64748b;">Stacje w trasie</small>
+                                    <strong>DC</strong> - szybkie (≤50 kW)
+                                    <br><small style="color: #64748b;">Podstawowe DC</small>
+                                </div>
+                            </label>
+                            <label style="display: flex; align-items: center; padding: 10px; background: #f8fafc; border-radius: 8px; cursor: pointer;">
+                                <input type="radio" name="chargerType" value="dc_mid" style="margin-right: 10px;">
+                                <div>
+                                    <strong>DC Mid</strong> - szybkie (50-125 kW)
+                                    <br><small style="color: #64748b;">Średnie DC</small>
                                 </div>
                             </label>
                             <label style="display: flex; align-items: center; padding: 10px; background: #f8fafc; border-radius: 8px; cursor: pointer;">
                                 <input type="radio" name="chargerType" value="hpc" style="margin-right: 10px;">
                                 <div>
-                                    <strong>HPC</strong> - ultraszybkie (>100 kW)
-                                    <br><small style="color: #64748b;">Autostrady</small>
+                                    <strong>HPC</strong> - ultraszybkie (>125 kW)
+                                    <br><small style="color: #64748b;">Premium stacje</small>
                                 </div>
                             </label>
                         </div>
@@ -627,19 +634,62 @@
                         <div class="checkbox-item">
                             <input type="checkbox" id="useDC" checked>
                             <label for="useDC" class="checkbox-label">
-                                <strong>DC - szybkie</strong> (do 50 kW) - w trasie
+                                <strong>DC - szybkie</strong> (≤50 kW) - podstawowe
+                            </label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="useDCMid" checked>
+                            <label for="useDCMid" class="checkbox-label">
+                                <strong>DC Mid - szybkie</strong> (50-125 kW) - średnie
                             </label>
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" id="useHPC">
                             <label for="useHPC" class="checkbox-label">
-                                <strong>HPC - ultraszybkie</strong> (>100 kW) - autostrady
+                                <strong>HPC - ultraszybkie</strong> (>125 kW) - premium
                             </label>
                         </div>
                     </div>
-                    <small style="color: #64748b; display: block; margin-top: 12px;">
-                        💡 Zaznacz typy ładowania, z których korzystasz. Zakładamy proporcje: AC 60%, DC 30%, HPC 10% (jeśli wybrane).
-                    </small>
+
+                    <div id="percentageSliders" style="margin-top: 20px;">
+                        <small style="color: #475569; font-weight: 600; display: block; margin-bottom: 10px;">Proporcje zużycia (suma = 100%):</small>
+
+                        <div id="acSliderContainer" style="margin-bottom: 15px;">
+                            <label style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em;">
+                                <span>AC - wolne</span>
+                                <span id="acPercentLabel" style="font-weight: 600; color: #10b981;">50% (100 kWh)</span>
+                            </label>
+                            <input type="range" id="acPercentSlider" min="0" max="100" value="50"
+                                   style="width: 100%; height: 8px; border-radius: 5px; outline: none;">
+                        </div>
+
+                        <div id="dcSliderContainer" style="margin-bottom: 15px;">
+                            <label style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em;">
+                                <span>DC ≤50kW</span>
+                                <span id="dcPercentLabel" style="font-weight: 600; color: #10b981;">30% (60 kWh)</span>
+                            </label>
+                            <input type="range" id="dcPercentSlider" min="0" max="100" value="30"
+                                   style="width: 100%; height: 8px; border-radius: 5px; outline: none;">
+                        </div>
+
+                        <div id="dcMidSliderContainer" style="margin-bottom: 15px;">
+                            <label style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em;">
+                                <span>DC Mid 50-125kW</span>
+                                <span id="dcMidPercentLabel" style="font-weight: 600; color: #10b981;">20% (40 kWh)</span>
+                            </label>
+                            <input type="range" id="dcMidPercentSlider" min="0" max="100" value="20"
+                                   style="width: 100%; height: 8px; border-radius: 5px; outline: none;">
+                        </div>
+
+                        <div id="hpcSliderContainer" style="margin-bottom: 15px; display: none;">
+                            <label style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em;">
+                                <span>HPC >125kW</span>
+                                <span id="hpcPercentLabel" style="font-weight: 600; color: #10b981;">0% (0 kWh)</span>
+                            </label>
+                            <input type="range" id="hpcPercentSlider" min="0" max="100" value="0"
+                                   style="width: 100%; height: 8px; border-radius: 5px; outline: none;">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="settings-section" id="subscriptionsSection">
@@ -676,9 +726,9 @@
                         <span>💾</span>
                         Ustawienia
                     </div>
-                    <button onclick="saveSettings()" style="width: 100%; padding: 10px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
-                        Zapisz preferencje
-                    </button>
+                    <div style="padding: 10px; background: #f0f9ff; border-radius: 8px; font-size: 0.85em; color: #0369a1; text-align: center;">
+                        ℹ️ Wszystkie zmiany zapisują się automatycznie
+                    </div>
                     <button onclick="resetSettings()" style="width: 100%; padding: 10px; background: #64748b; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; margin-top: 10px;">
                         Resetuj ustawienia
                     </button>
@@ -736,7 +786,12 @@
             monthlyUsage: 200,
             useAC: true,
             useDC: true,
+            useDCMid: true,
             useHPC: false,
+            acPercent: 50,
+            dcPercent: 30,
+            dcMidPercent: 20,
+            hpcPercent: 0,
             subscriptions: [],
             usePromos: true
         };
@@ -869,8 +924,15 @@
             document.getElementById('monthlyUsageRange').value = userSettings.monthlyUsage;
             document.getElementById('useAC').checked = userSettings.useAC;
             document.getElementById('useDC').checked = userSettings.useDC;
+            document.getElementById('useDCMid').checked = userSettings.useDCMid !== false;
             document.getElementById('useHPC').checked = userSettings.useHPC;
             document.getElementById('usePromos').checked = userSettings.usePromos !== false;
+
+            // Pokaż/ukryj suwaki w zależności od checkboxów
+            document.getElementById('acSliderContainer').style.display = userSettings.useAC ? 'block' : 'none';
+            document.getElementById('dcSliderContainer').style.display = userSettings.useDC ? 'block' : 'none';
+            document.getElementById('dcMidSliderContainer').style.display = userSettings.useDCMid !== false ? 'block' : 'none';
+            document.getElementById('hpcSliderContainer').style.display = userSettings.useHPC ? 'block' : 'none';
 
             if (pricingData) {
                 generateSubscriptionsList();
@@ -892,6 +954,7 @@
                 monthlyUsage: 200,
                 useAC: true,
                 useDC: true,
+                useDCMid: true,
                 useHPC: false,
                 subscriptions: [],
                 usePromos: true
@@ -903,8 +966,144 @@
         function togglePromos() {
             userSettings.usePromos = document.getElementById('usePromos').checked;
             console.log('Promocje:', userSettings.usePromos ? 'włączone' : 'wyłączone');
+
+            // Auto-zapisz ustawienia
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+
             updatePromosHint();
             calculateAndDisplay();
+        }
+
+        // Redystrybucja procentów po odznaczeniu checkboxa
+        function redistributePercents(activeTypes) {
+            const active = activeTypes.filter(t =>
+                t === 'ac' ? userSettings.useAC :
+                t === 'dc' ? userSettings.useDC :
+                t === 'dcMid' ? userSettings.useDCMid :
+                userSettings.useHPC
+            );
+
+            if (active.length === 0) {
+                // Brak aktywnych - wszystkie na 0
+                ['ac', 'dc', 'dcMid', 'hpc'].forEach(t => {
+                    userSettings[t + 'Percent'] = 0;
+                });
+                updatePercentageUI();
+                return;
+            }
+
+            // Pobierz aktualne wartości aktywnych
+            const currentValues = {};
+            let sum = 0;
+            active.forEach(t => {
+                currentValues[t] = userSettings[t + 'Percent'];
+                sum += currentValues[t];
+            });
+
+            if (sum === 0) {
+                // Równo podziel 100%
+                const evenSplit = Math.floor(100 / active.length);
+                active.forEach((t, idx) => {
+                    userSettings[t + 'Percent'] = idx === 0 ?
+                        100 - (evenSplit * (active.length - 1)) : evenSplit;
+                });
+            } else {
+                // Proporcjonalnie rozłóż do 100%
+                active.forEach(t => {
+                    const ratio = currentValues[t] / sum;
+                    userSettings[t + 'Percent'] = Math.round(100 * ratio);
+                });
+
+                // Korekta zaokrągleń
+                const newSum = active.reduce((s, t) => s + userSettings[t + 'Percent'], 0);
+                if (newSum !== 100 && active.length > 0) {
+                    userSettings[active[0] + 'Percent'] += (100 - newSum);
+                }
+            }
+
+            updatePercentageUI();
+        }
+
+        // Auto-normalizacja procentów do 100%
+        function normalizePercents(changedType) {
+            const types = ['ac', 'dc', 'dcMid', 'hpc'];
+            const active = types.filter(t =>
+                t === 'ac' ? userSettings.useAC :
+                t === 'dc' ? userSettings.useDC :
+                t === 'dcMid' ? userSettings.useDCMid :
+                userSettings.useHPC
+            );
+
+            if (active.length === 0) return;
+
+            // Pobierz nową wartość zmienionego suwaka
+            const changedValue = userSettings[changedType + 'Percent'];
+
+            // Pozostałe aktywne typy
+            const others = active.filter(t => t !== changedType);
+
+            if (others.length === 0) {
+                // Tylko jeden aktywny - ustaw na 100%
+                userSettings[changedType + 'Percent'] = 100;
+            } else {
+                // Oblicz pozostałą wartość do rozdysponowania
+                const remaining = 100 - changedValue;
+
+                if (remaining < 0) {
+                    // Przekroczono 100% - wymuś 100%
+                    userSettings[changedType + 'Percent'] = 100;
+                    others.forEach(t => {
+                        userSettings[t + 'Percent'] = 0;
+                    });
+                } else {
+                    // Pobierz aktualne wartości pozostałych
+                    const otherValues = {};
+                    let otherSum = 0;
+                    others.forEach(t => {
+                        otherValues[t] = userSettings[t + 'Percent'];
+                        otherSum += otherValues[t];
+                    });
+
+                    // Proporcjonalnie przelicz pozostałe
+                    if (otherSum > 0) {
+                        others.forEach(t => {
+                            const ratio = otherValues[t] / otherSum;
+                            userSettings[t + 'Percent'] = Math.round(remaining * ratio);
+                        });
+                    } else {
+                        // Równo podziel pozostałe
+                        const evenSplit = Math.floor(remaining / others.length);
+                        others.forEach((t, idx) => {
+                            userSettings[t + 'Percent'] = idx === 0 ?
+                                remaining - (evenSplit * (others.length - 1)) : evenSplit;
+                        });
+                    }
+                }
+            }
+
+            // Aktualizuj UI
+            updatePercentageUI();
+        }
+
+        function updatePercentageUI() {
+            const types = [
+                {key: 'ac', label: 'acPercentLabel', slider: 'acPercentSlider'},
+                {key: 'dc', label: 'dcPercentLabel', slider: 'dcPercentSlider'},
+                {key: 'dcMid', label: 'dcMidPercentLabel', slider: 'dcMidPercentSlider'},
+                {key: 'hpc', label: 'hpcPercentLabel', slider: 'hpcPercentSlider'}
+            ];
+
+            types.forEach(t => {
+                const labelEl = document.getElementById(t.label);
+                const sliderEl = document.getElementById(t.slider);
+
+                if (labelEl && sliderEl) {
+                    const percent = userSettings[t.key + 'Percent'] || 0;
+                    const kwh = Math.round(userSettings.monthlyUsage * percent / 100);
+                    labelEl.textContent = `${percent}% (${kwh} kWh)`;
+                    sliderEl.value = percent;
+                }
+            });
         }
 
         function updatePromosHint() {
@@ -940,6 +1139,9 @@
         // Mode switching
         function setMode(mode, recalculate = true) {
             userSettings.mode = mode;
+
+            // Auto-zapisz ustawienia
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
 
             document.getElementById('modeInstant').classList.toggle('active', mode === 'instant');
             document.getElementById('modeMonthly').classList.toggle('active', mode === 'monthly');
@@ -1003,8 +1205,13 @@
                 const item = document.createElement('div');
                 item.className = 'checkbox-item';
 
+                // Jeśli nic nie wybrano dla tego operatora, zaznacz pierwszy plan z monthlyCost === 0
+                const hasSelectedForOperator = operator.subscriptions.some(s =>
+                    userSettings.subscriptions.includes(s.id)
+                );
                 const isChecked = userSettings.subscriptions.includes(sub.id) ||
-                                 (userSettings.subscriptions.length === 0 && sub.monthlyCost === 0 && index === 0);
+                                 (!hasSelectedForOperator && sub.monthlyCost === 0 &&
+                                  index === operator.subscriptions.findIndex(s => s.monthlyCost === 0));
 
                 if (isChecked) {
                     item.classList.add('selected');
@@ -1065,6 +1272,9 @@
             console.log(`Dodano: ${subId}`);
             console.log(`Aktualna lista subskrypcji:`, userSettings.subscriptions);
 
+            // Auto-zapisz ustawienia
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+
             // Zaktualizuj UI - podświetl wybraną opcję
             document.querySelectorAll(`input[name="${operatorKey}_plan"]`).forEach(radio => {
                 const item = radio.closest('.checkbox-item');
@@ -1078,6 +1288,7 @@
             });
 
             // Przelicz i wyświetl wyniki
+            console.log('🔄 Wywołuję calculateAndDisplay()...');
             calculateAndDisplay();
         }
 
@@ -1092,41 +1303,21 @@
                 userSettings.instantKwh : 
                 userSettings.monthlyUsage;
 
-            let acRatio = 0, dcRatio = 0, hpcRatio = 0;
-            
+            let acRatio = 0, dcRatio = 0, dcMidRatio = 0, hpcRatio = 0;
+
             if (userSettings.mode === 'instant') {
                 switch(userSettings.chargerType) {
                     case 'ac': acRatio = 1.0; break;
                     case 'dc': dcRatio = 1.0; break;
+                    case 'dc_mid': dcMidRatio = 1.0; break;
                     case 'hpc': hpcRatio = 1.0; break;
                 }
             } else {
-                const useAC = userSettings.useAC;
-                const useDC = userSettings.useDC;
-                const useHPC = userSettings.useHPC;
-                
-                if (!useAC && !useDC && !useHPC) {
-                    return results;
-                } else if (useAC && !useDC && !useHPC) {
-                    acRatio = 1.0;
-                } else if (!useAC && useDC && !useHPC) {
-                    dcRatio = 1.0;
-                } else if (!useAC && !useDC && useHPC) {
-                    hpcRatio = 1.0;
-                } else if (useAC && useDC && !useHPC) {
-                    acRatio = 0.67;
-                    dcRatio = 0.33;
-                } else if (useAC && !useDC && useHPC) {
-                    acRatio = 0.85;
-                    hpcRatio = 0.15;
-                } else if (!useAC && useDC && useHPC) {
-                    dcRatio = 0.75;
-                    hpcRatio = 0.25;
-                } else if (useAC && useDC && useHPC) {
-                    acRatio = 0.60;
-                    dcRatio = 0.30;
-                    hpcRatio = 0.10;
-                }
+                // Użyj procentów zdefiniowanych przez użytkownika
+                acRatio = userSettings.acPercent / 100;
+                dcRatio = userSettings.dcPercent / 100;
+                dcMidRatio = userSettings.dcMidPercent / 100;
+                hpcRatio = userSettings.hpcPercent / 100;
             }
 
             Object.entries(pricingData.operators).forEach(([key, operator]) => {
@@ -1138,13 +1329,14 @@
                 );
 
                 if (userSettings.mode === 'instant') {
-                    // W trybie jednorazowym użyj wybranej subskrypcji BEZ abonamentu
-                    // Jeśli wybrano opcję z abonamentem, weź pierwszą bez abonamentu
-                    if (selectedSub && selectedSub.monthlyCost === 0) {
+                    // W trybie jednorazowym użyj wybranej subskrypcji
+                    // (abonament nie jest brany pod uwagę w koszcie jednorazowego ładowania)
+                    if (selectedSub) {
                         subscriptionsToShow = [selectedSub];
                     } else {
+                        // Jeśli nic nie wybrano, weź pierwszą bez abonamentu
                         const firstFree = operator.subscriptions.find(s => s.monthlyCost === 0);
-                        subscriptionsToShow = firstFree ? [firstFree] : [];
+                        subscriptionsToShow = firstFree ? [firstFree] : [operator.subscriptions[0]];
                     }
                 } else {
                     // W trybie miesięcznym użyj wybranej subskrypcji (może mieć abonament)
@@ -1158,25 +1350,33 @@
 
                     // Check for active promotions (temporary price drops) - tylko jeśli użytkownik włączył promocje
                     if (userSettings.usePromos && operator.promotions && operator.promotions.length > 0) {
+                        console.log(`🎁 ${operator.name}: sprawdzam ${operator.promotions.length} promocji, usePromos=${userSettings.usePromos}`);
                         operator.promotions.forEach(promo => {
                             const validFrom = new Date(promo.validFrom);
                             const validTo = new Date(promo.validTo);
+                            console.log(`   Promocja: ${promo.name}, valid: ${validFrom.toLocaleDateString()} - ${validTo.toLocaleDateString()}, currentDate: ${currentDate.toLocaleDateString()}`);
 
                             if (currentDate >= validFrom && currentDate <= validTo) {
                                 prices = {...promo.prices};
                                 isPromo = true;
                                 promoName = promo.name;
+                                console.log(`   ✅ AKTYWNA! Zmieniam ceny na:`, prices);
+                            } else {
+                                console.log(`   ❌ Nieaktywna (poza zakresem dat)`);
                             }
                         });
                     }
 
                     let energyCost = 0;
-                    
+
                     if (prices.ac && acRatio > 0) {
                         energyCost += (kwhAmount * acRatio) * prices.ac;
                     }
                     if (prices.dc && dcRatio > 0) {
                         energyCost += (kwhAmount * dcRatio) * prices.dc;
+                    }
+                    if (prices.dc_mid && dcMidRatio > 0) {
+                        energyCost += (kwhAmount * dcMidRatio) * prices.dc_mid;
                     }
                     if (prices.hpc && hpcRatio > 0) {
                         energyCost += (kwhAmount * hpcRatio) * prices.hpc;
@@ -1190,11 +1390,12 @@
                     if (userSettings.mode === 'monthly' && subscription.monthlyCost > 0) {
                         const standardSub = operator.subscriptions.find(s => s.monthlyCost === 0);
                         if (standardSub) {
-                            const avgSavingPerKwh = 
-                                acRatio * (standardSub.prices.ac - prices.ac) +
-                                dcRatio * (standardSub.prices.dc - prices.dc) +
-                                hpcRatio * (standardSub.prices.hpc - prices.hpc);
-                            
+                            const avgSavingPerKwh =
+                                acRatio * ((standardSub.prices.ac || 0) - (prices.ac || 0)) +
+                                dcRatio * ((standardSub.prices.dc || 0) - (prices.dc || 0)) +
+                                dcMidRatio * ((standardSub.prices.dc_mid || 0) - (prices.dc_mid || 0)) +
+                                hpcRatio * ((standardSub.prices.hpc || 0) - (prices.hpc || 0));
+
                             if (avgSavingPerKwh > 0) {
                                 breakEvenPoint = Math.ceil(subscription.monthlyCost / avgSavingPerKwh);
                             }
@@ -1227,9 +1428,11 @@
 
         // Display results
         function calculateAndDisplay() {
+            console.log('📊 calculateAndDisplay: START');
             if (!pricingData) return;
-            
+
             const results = calculateCosts();
+            console.log('📊 calculateAndDisplay: results =', results.length);
             
             if (results.length > 0) {
                 const best = results[0];
@@ -1238,12 +1441,14 @@
                 if (userSettings.mode === 'instant') {
                     const chargerTypeLabel = {
                         'ac': 'AC (wolne)',
-                        'dc': 'DC (szybkie)',
-                        'hpc': 'HPC (ultraszybkie)'
+                        'dc': 'DC ≤50kW',
+                        'dc_mid': 'DC Mid 50-125kW',
+                        'hpc': 'HPC >125kW'
                     }[userSettings.chargerType];
 
                     const chargerPrice = best.selectedChargerType === 'ac' ? best.prices.ac :
                                        best.selectedChargerType === 'dc' ? best.prices.dc :
+                                       best.selectedChargerType === 'dc_mid' ? best.prices.dc_mid :
                                        best.prices.hpc;
 
                     const isPromoSub = best.subscriptionId.includes('_promo');
@@ -1319,6 +1524,7 @@
                 if (userSettings.mode === 'instant') {
                     const chargerPrice = userSettings.chargerType === 'ac' ? result.prices.ac :
                                        userSettings.chargerType === 'dc' ? result.prices.dc :
+                                       userSettings.chargerType === 'dc_mid' ? result.prices.dc_mid :
                                        result.prices.hpc;
                     
                     const isPromoSubscription = result.subscriptionId.includes('_promo');
@@ -1497,6 +1703,7 @@
         // Event listeners
         document.getElementById('instantKwh').addEventListener('input', (e) => {
             userSettings.instantKwh = parseFloat(e.target.value) || 0;
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
             if (userSettings.mode === 'instant') {
                 calculateAndDisplay();
             }
@@ -1505,6 +1712,7 @@
         document.getElementsByName('chargerType').forEach(radio => {
             radio.addEventListener('change', (e) => {
                 userSettings.chargerType = e.target.value;
+                localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
                 if (userSettings.mode === 'instant') {
                     calculateAndDisplay();
                 }
@@ -1514,6 +1722,8 @@
         document.getElementById('monthlyUsage').addEventListener('input', (e) => {
             userSettings.monthlyUsage = parseFloat(e.target.value) || 0;
             document.getElementById('monthlyUsageRange').value = userSettings.monthlyUsage;
+            updatePercentageUI(); // Aktualizuj kWh w labelkach
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -1522,6 +1732,8 @@
         document.getElementById('monthlyUsageRange').addEventListener('input', (e) => {
             userSettings.monthlyUsage = parseFloat(e.target.value);
             document.getElementById('monthlyUsage').value = userSettings.monthlyUsage;
+            updatePercentageUI(); // Aktualizuj kWh w labelkach
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -1529,6 +1741,18 @@
 
         document.getElementById('useAC').addEventListener('change', (e) => {
             userSettings.useAC = e.target.checked;
+            document.getElementById('acSliderContainer').style.display = e.target.checked ? 'block' : 'none';
+
+            if (e.target.checked) {
+                if (userSettings.acPercent === 0) userSettings.acPercent = 25;
+                normalizePercents('ac');
+            } else {
+                // Odznaczono - ustaw na 0 i przelicz pozostałe
+                userSettings.acPercent = 0;
+                redistributePercents(['dc', 'dcMid', 'hpc']);
+            }
+
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -1536,6 +1760,35 @@
 
         document.getElementById('useDC').addEventListener('change', (e) => {
             userSettings.useDC = e.target.checked;
+            document.getElementById('dcSliderContainer').style.display = e.target.checked ? 'block' : 'none';
+
+            if (e.target.checked) {
+                if (userSettings.dcPercent === 0) userSettings.dcPercent = 25;
+                normalizePercents('dc');
+            } else {
+                userSettings.dcPercent = 0;
+                redistributePercents(['ac', 'dcMid', 'hpc']);
+            }
+
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            if (userSettings.mode === 'monthly') {
+                calculateAndDisplay();
+            }
+        });
+
+        document.getElementById('useDCMid').addEventListener('change', (e) => {
+            userSettings.useDCMid = e.target.checked;
+            document.getElementById('dcMidSliderContainer').style.display = e.target.checked ? 'block' : 'none';
+
+            if (e.target.checked) {
+                if (userSettings.dcMidPercent === 0) userSettings.dcMidPercent = 25;
+                normalizePercents('dcMid');
+            } else {
+                userSettings.dcMidPercent = 0;
+                redistributePercents(['ac', 'dc', 'hpc']);
+            }
+
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -1543,6 +1796,54 @@
 
         document.getElementById('useHPC').addEventListener('change', (e) => {
             userSettings.useHPC = e.target.checked;
+            document.getElementById('hpcSliderContainer').style.display = e.target.checked ? 'block' : 'none';
+
+            if (e.target.checked) {
+                if (userSettings.hpcPercent === 0) userSettings.hpcPercent = 25;
+                normalizePercents('hpc');
+            } else {
+                userSettings.hpcPercent = 0;
+                redistributePercents(['ac', 'dc', 'dcMid']);
+            }
+
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            if (userSettings.mode === 'monthly') {
+                calculateAndDisplay();
+            }
+        });
+
+        // Event listenery dla suwaków procentowych
+        document.getElementById('acPercentSlider').addEventListener('input', (e) => {
+            userSettings.acPercent = parseInt(e.target.value);
+            normalizePercents('ac');
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            if (userSettings.mode === 'monthly') {
+                calculateAndDisplay();
+            }
+        });
+
+        document.getElementById('dcPercentSlider').addEventListener('input', (e) => {
+            userSettings.dcPercent = parseInt(e.target.value);
+            normalizePercents('dc');
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            if (userSettings.mode === 'monthly') {
+                calculateAndDisplay();
+            }
+        });
+
+        document.getElementById('dcMidPercentSlider').addEventListener('input', (e) => {
+            userSettings.dcMidPercent = parseInt(e.target.value);
+            normalizePercents('dcMid');
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            if (userSettings.mode === 'monthly') {
+                calculateAndDisplay();
+            }
+        });
+
+        document.getElementById('hpcPercentSlider').addEventListener('input', (e) => {
+            userSettings.hpcPercent = parseInt(e.target.value);
+            normalizePercents('hpc');
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -1625,6 +1926,7 @@
 
         // Initialize defaults
         function initializeDefaults() {
+            // Inicjalizacja subskrypcji
             if (userSettings.subscriptions.length === 0 && pricingData) {
                 Object.entries(pricingData.operators).forEach(([key, operator]) => {
                     // Wybierz pierwszą opcję bez abonamentu
@@ -1637,6 +1939,32 @@
                 });
                 console.log('Wybrane subskrypcje:', userSettings.subscriptions);
             }
+
+            // Inicjalizacja procentów - muszą sumować się do 100%
+            if (userSettings.acPercent === undefined) userSettings.acPercent = 50;
+            if (userSettings.dcPercent === undefined) userSettings.dcPercent = 30;
+            if (userSettings.dcMidPercent === undefined) userSettings.dcMidPercent = 20;
+            if (userSettings.hpcPercent === undefined) userSettings.hpcPercent = 0;
+
+            // Upewnij się że suma = 100%
+            const sum = userSettings.acPercent + userSettings.dcPercent + userSettings.dcMidPercent + userSettings.hpcPercent;
+            if (sum !== 100) {
+                console.log(`⚠️ Suma procentów = ${sum}, normalizuję do 100%`);
+                // Przelicz proporcjonalnie
+                const factor = 100 / sum;
+                userSettings.acPercent = Math.round(userSettings.acPercent * factor);
+                userSettings.dcPercent = Math.round(userSettings.dcPercent * factor);
+                userSettings.dcMidPercent = Math.round(userSettings.dcMidPercent * factor);
+                userSettings.hpcPercent = Math.round(userSettings.hpcPercent * factor);
+
+                // Korekta zaokrągleń - dodaj różnicę do największego
+                const newSum = userSettings.acPercent + userSettings.dcPercent + userSettings.dcMidPercent + userSettings.hpcPercent;
+                if (newSum !== 100) {
+                    userSettings.acPercent += (100 - newSum);
+                }
+
+                console.log(`✅ Znormalizowano: AC=${userSettings.acPercent}%, DC=${userSettings.dcPercent}%, DCMid=${userSettings.dcMidPercent}%, HPC=${userSettings.hpcPercent}%`);
+            }
         }
 
         // Initialize app
@@ -1645,6 +1973,7 @@
             await loadPricingData();
             initializeDefaults();
             updateStatusBar();
+            updatePercentageUI(); // Zaktualizuj suwaki przy starcie
             calculateAndDisplay();
         }
 

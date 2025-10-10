@@ -1,5 +1,5 @@
 {
-  "lastUpdate": "2025-10-09T13:19:26.392388",
+  "lastUpdate": "2025-10-09T15:13:18.020560",
   "operators": {
     "greenway": {
       "name": "GreenWay",
@@ -10,9 +10,10 @@
           "name": "Energia Standard",
           "monthlyCost": 0,
           "prices": {
-            "ac": 1.6,
-            "dc": 2.1,
-            "hpc": 2.1
+            "ac": 1.95,
+            "dc": 3.15,
+            "dc_mid": 3.15,
+            "hpc": 3.15
           },
           "benefits": []
         },
@@ -23,6 +24,7 @@
           "prices": {
             "ac": 1.75,
             "dc": 2.4,
+            "dc_mid": 2.4,
             "hpc": 2.4
           },
           "benefits": [
@@ -36,6 +38,7 @@
           "prices": {
             "ac": 1.6,
             "dc": 2.1,
+            "dc_mid": 2.1,
             "hpc": 2.1
           },
           "benefits": [
@@ -55,7 +58,8 @@
           "monthlyCost": 0,
           "prices": {
             "ac": 1.95,
-            "dc": 2.89,
+            "dc": 2.69,
+            "dc_mid": 2.89,
             "hpc": 3.19
           },
           "benefits": []
@@ -64,11 +68,12 @@
       "promotions": [
         {
           "name": "Promocja cenowa -25%",
-          "validFrom": "2025-02-10",
+          "validFrom": "2025-10-02",
           "validTo": "2025-11-03",
           "prices": {
             "ac": 1.46,
             "dc": 2.02,
+            "dc_mid": 2.17,
             "hpc": 2.39
           },
           "conditions": [
