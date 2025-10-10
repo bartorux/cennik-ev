@@ -619,77 +619,23 @@
                     </div>
                 </div>
 
-                <div class="settings-section" id="chargingTypesSection" style="display: none;">
+                <div class="settings-section" id="monthlyViewSection" style="display: none;">
                     <div class="section-title">
-                        <span>🔌</span>
-                        Rodzaje ładowania
+                        <span>👁️</span>
+                        Widok porównania
                     </div>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="useAC" checked>
-                            <label for="useAC" class="checkbox-label">
-                                <strong>AC - wolne</strong> (do 22 kW) - domowe, hotelowe
-                            </label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="useDC" checked>
-                            <label for="useDC" class="checkbox-label">
-                                <strong>DC - szybkie</strong> (≤50 kW) - podstawowe
-                            </label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="useDCMid" checked>
-                            <label for="useDCMid" class="checkbox-label">
-                                <strong>DC Mid - szybkie</strong> (50-125 kW) - średnie
-                            </label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="useHPC">
-                            <label for="useHPC" class="checkbox-label">
-                                <strong>HPC - ultraszybkie</strong> (>125 kW) - premium
-                            </label>
-                        </div>
+                    <div class="button-group" style="display: flex; gap: 10px;">
+                        <button id="viewCategoryBtn" class="view-button active" onclick="setMonthlyView('category')">
+                            Per kategoria
+                        </button>
+                        <button id="viewTotalBtn" class="view-button" onclick="setMonthlyView('total')">
+                            Łączny koszt
+                        </button>
                     </div>
-
-                    <div id="percentageSliders" style="margin-top: 20px;">
-                        <small style="color: #475569; font-weight: 600; display: block; margin-bottom: 10px;">Proporcje zużycia (suma = 100%):</small>
-
-                        <div id="acSliderContainer" style="margin-bottom: 15px;">
-                            <label style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em;">
-                                <span>AC - wolne</span>
-                                <span id="acPercentLabel" style="font-weight: 600; color: #10b981;">50% (100 kWh)</span>
-                            </label>
-                            <input type="range" id="acPercentSlider" min="0" max="100" value="50"
-                                   style="width: 100%; height: 8px; border-radius: 5px; outline: none;">
-                        </div>
-
-                        <div id="dcSliderContainer" style="margin-bottom: 15px;">
-                            <label style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em;">
-                                <span>DC ≤50kW</span>
-                                <span id="dcPercentLabel" style="font-weight: 600; color: #10b981;">30% (60 kWh)</span>
-                            </label>
-                            <input type="range" id="dcPercentSlider" min="0" max="100" value="30"
-                                   style="width: 100%; height: 8px; border-radius: 5px; outline: none;">
-                        </div>
-
-                        <div id="dcMidSliderContainer" style="margin-bottom: 15px;">
-                            <label style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em;">
-                                <span>DC Mid 50-125kW</span>
-                                <span id="dcMidPercentLabel" style="font-weight: 600; color: #10b981;">20% (40 kWh)</span>
-                            </label>
-                            <input type="range" id="dcMidPercentSlider" min="0" max="100" value="20"
-                                   style="width: 100%; height: 8px; border-radius: 5px; outline: none;">
-                        </div>
-
-                        <div id="hpcSliderContainer" style="margin-bottom: 15px; display: none;">
-                            <label style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em;">
-                                <span>HPC >125kW</span>
-                                <span id="hpcPercentLabel" style="font-weight: 600; color: #10b981;">0% (0 kWh)</span>
-                            </label>
-                            <input type="range" id="hpcPercentSlider" min="0" max="100" value="0"
-                                   style="width: 100%; height: 8px; border-radius: 5px; outline: none;">
-                        </div>
-                    </div>
+                    <small style="color: #64748b; display: block; margin-top: 8px;">
+                        <strong>Per kategoria:</strong> porównanie dla każdego typu ładowania osobno<br>
+                        <strong>Łączny koszt:</strong> suma wszystkich typów według proporcji
+                    </small>
                 </div>
 
                 <div class="settings-section" id="subscriptionsSection">
@@ -1205,13 +1151,12 @@
                 const item = document.createElement('div');
                 item.className = 'checkbox-item';
 
-                // Jeśli nic nie wybrano dla tego operatora, zaznacz pierwszy plan z monthlyCost === 0
+                // Jeśli nic nie wybrano dla tego operatora, zaznacz pierwszy plan (index === 0)
                 const hasSelectedForOperator = operator.subscriptions.some(s =>
                     userSettings.subscriptions.includes(s.id)
                 );
                 const isChecked = userSettings.subscriptions.includes(sub.id) ||
-                                 (!hasSelectedForOperator && sub.monthlyCost === 0 &&
-                                  index === operator.subscriptions.findIndex(s => s.monthlyCost === 0));
+                                 (!hasSelectedForOperator && index === 0);
 
                 if (isChecked) {
                     item.classList.add('selected');
@@ -1367,19 +1312,38 @@
                         });
                     }
 
+                    // IONITY: tylko HPC - pomiń jeśli użytkownik wybrał AC/DC/DC Mid w trybie instant
+                    if (userSettings.mode === 'instant' && key === 'ionity') {
+                        if (userSettings.chargerType !== 'hpc') {
+                            return; // Skip IONITY for non-HPC charger types
+                        }
+                    }
+
                     let energyCost = 0;
 
-                    if (prices.ac && acRatio > 0) {
-                        energyCost += (kwhAmount * acRatio) * prices.ac;
-                    }
-                    if (prices.dc && dcRatio > 0) {
-                        energyCost += (kwhAmount * dcRatio) * prices.dc;
-                    }
-                    if (prices.dc_mid && dcMidRatio > 0) {
-                        energyCost += (kwhAmount * dcMidRatio) * prices.dc_mid;
-                    }
-                    if (prices.hpc && hpcRatio > 0) {
-                        energyCost += (kwhAmount * hpcRatio) * prices.hpc;
+                    // IONITY: w trybie miesięcznym liczy tylko HPC (ignoruje AC/DC/DC Mid)
+                    if (key === 'ionity') {
+                        // IONITY ma tylko HPC
+                        if (prices.hpc && hpcRatio > 0) {
+                            energyCost = (kwhAmount * hpcRatio) * prices.hpc;
+                        } else {
+                            // Jeśli użytkownik nie ma HPC w miksie, IONITY pokazuje 0 zł za energię
+                            energyCost = 0;
+                        }
+                    } else {
+                        // Dla innych operatorów: normalnie liczymy wszystkie typy
+                        if (prices.ac && acRatio > 0) {
+                            energyCost += (kwhAmount * acRatio) * prices.ac;
+                        }
+                        if (prices.dc && dcRatio > 0) {
+                            energyCost += (kwhAmount * dcRatio) * prices.dc;
+                        }
+                        if (prices.dc_mid && dcMidRatio > 0) {
+                            energyCost += (kwhAmount * dcMidRatio) * prices.dc_mid;
+                        }
+                        if (prices.hpc && hpcRatio > 0) {
+                            energyCost += (kwhAmount * hpcRatio) * prices.hpc;
+                        }
                     }
 
                     const totalCost = userSettings.mode === 'instant' ? 
