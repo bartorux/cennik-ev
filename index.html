@@ -213,6 +213,29 @@
             font-weight: bold;
         }
 
+        .view-button {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .view-button:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .view-button.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
         .results-panel {
             display: flex;
             flex-direction: column;
@@ -730,6 +753,7 @@
             instantKwh: 40,
             chargerType: 'dc',
             monthlyUsage: 200,
+            monthlyView: 'category',
             useAC: true,
             useDC: true,
             useDCMid: true,
@@ -1094,7 +1118,7 @@
 
             document.getElementById('instantSection').style.display = mode === 'instant' ? 'block' : 'none';
             document.getElementById('monthlySection').style.display = mode === 'monthly' ? 'block' : 'none';
-            document.getElementById('chargingTypesSection').style.display = mode === 'monthly' ? 'block' : 'none';
+            document.getElementById('monthlyViewSection').style.display = mode === 'monthly' ? 'block' : 'none';
             document.getElementById('chartSection').style.display = mode === 'monthly' ? 'block' : 'none';
 
             // Zaktualizuj tytuł sekcji subskrypcji
@@ -1118,6 +1142,24 @@
             if (recalculate && pricingData) {
                 calculateAndDisplay();
             }
+        }
+
+        // Monthly view switching
+        function setMonthlyView(view) {
+            userSettings.monthlyView = view;
+            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+
+            document.getElementById('viewCategoryBtn').classList.toggle('active', view === 'category');
+            document.getElementById('viewTotalBtn').classList.toggle('active', view === 'total');
+
+            // Ukryj wykres w category view
+            const chartSection = document.getElementById('chartSection');
+            if (chartSection) {
+                chartSection.style.display = view === 'category' ? 'none' : 'block';
+            }
+
+            console.log('Zmieniono widok na:', view);
+            calculateAndDisplay();
         }
 
         // Generate subscriptions list
@@ -1235,6 +1277,76 @@
             // Przelicz i wyświetl wyniki
             console.log('🔄 Wywołuję calculateAndDisplay()...');
             calculateAndDisplay();
+        }
+
+        // Calculate category results (per charger type)
+        function calculateCategoryResults() {
+            if (!pricingData) return { ac: [], dc: [], dc_mid: [], hpc: [] };
+
+            const currentDate = new Date();
+            const kwhAmount = userSettings.monthlyUsage;
+            const categories = { ac: [], dc: [], dc_mid: [], hpc: [] };
+
+            Object.entries(pricingData.operators).forEach(([key, operator]) => {
+                const selectedSub = operator.subscriptions.find(sub =>
+                    userSettings.subscriptions.includes(sub.id)
+                ) || operator.subscriptions[0];
+
+                let prices = {...selectedSub.prices};
+                let isPromo = false;
+
+                // Check for active promotions
+                if (userSettings.usePromos && operator.promotions) {
+                    operator.promotions.forEach(promo => {
+                        const validFrom = new Date(promo.validFrom);
+                        const validTo = new Date(promo.validTo);
+                        if (currentDate >= validFrom && currentDate <= validTo) {
+                            prices = {...promo.prices};
+                            isPromo = true;
+                        }
+                    });
+                }
+
+                // For each category, add result if operator has that charger type
+                const chargerTypes = [
+                    { key: 'ac', price: prices.ac },
+                    { key: 'dc', price: prices.dc },
+                    { key: 'dc_mid', price: prices.dc_mid },
+                    { key: 'hpc', price: prices.hpc }
+                ];
+
+                chargerTypes.forEach(({ key: chargerKey, price }) => {
+                    // IONITY: tylko HPC
+                    if (key === 'ionity' && chargerKey !== 'hpc') return;
+
+                    // Skip 999 (placeholder prices)
+                    if (price >= 999) return;
+
+                    if (price) {
+                        const energyCost = kwhAmount * price;
+                        const totalCost = energyCost + selectedSub.monthlyCost;
+
+                        categories[chargerKey].push({
+                            operator: operator.name,
+                            subscription: selectedSub.name,
+                            monthlyCost: selectedSub.monthlyCost,
+                            energyCost: energyCost,
+                            totalCost: totalCost,
+                            pricePerKwh: price,
+                            isPromo: isPromo,
+                            color: operator.color
+                        });
+                    }
+                });
+            });
+
+            // Sort each category by total cost
+            Object.keys(categories).forEach(cat => {
+                categories[cat].sort((a, b) => a.totalCost - b.totalCost);
+            });
+
+            console.log('📊 Category results:', categories);
+            return categories;
         }
 
         // Calculate costs for each operator
@@ -1390,14 +1502,91 @@
             return results;
         }
 
+        // Display category results
+        function displayCategoryResults() {
+            const categories = calculateCategoryResults();
+            const grid = document.getElementById('operatorsGrid');
+            grid.innerHTML = '';
+
+            // Hide best option card in category view
+            const bestCard = document.querySelector('.best-option');
+            if (bestCard) bestCard.style.display = 'none';
+
+            const categoryConfig = [
+                { key: 'ac', label: 'AC (wolne)', icon: '🔌', color: '#10b981' },
+                { key: 'dc', label: 'DC ≤50kW', icon: '⚡', color: '#3b82f6' },
+                { key: 'dc_mid', label: 'DC Mid 50-125kW', icon: '⚡⚡', color: '#8b5cf6' },
+                { key: 'hpc', label: 'HPC >125kW', icon: '🚀', color: '#ef4444' }
+            ];
+
+            categoryConfig.forEach(({ key, label, icon, color }) => {
+                const categoryResults = categories[key];
+                if (categoryResults.length === 0) return;
+
+                const section = document.createElement('div');
+                section.style.cssText = 'grid-column: 1 / -1; margin-bottom: 30px;';
+                section.innerHTML = `
+                    <h3 style="margin: 0 0 15px 0; padding: 12px 20px; background: linear-gradient(135deg, ${color}, ${color}dd); color: white; border-radius: 10px; font-size: 1.1em; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.3em;">${icon}</span>
+                        ${label}
+                        <span style="opacity: 0.8; font-size: 0.85em; margin-left: auto;">${categoryResults.length} opcji</span>
+                    </h3>
+                    <div class="category-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;"></div>
+                `;
+                grid.appendChild(section);
+
+                const categoryGrid = section.querySelector('.category-grid');
+                categoryResults.slice(0, 3).forEach((result, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'operator-card';
+                    if (index === 0) card.classList.add('recommended');
+
+                    const rankClass = index === 0 ? 'first' : '';
+
+                    card.innerHTML = `
+                        <div class="rank-badge ${rankClass}">#${index + 1}</div>
+                        <div class="operator-header">
+                            <div class="operator-name">${result.operator}</div>
+                            ${result.isPromo ? '<div class="promo-indicator">PROMO</div>' : ''}
+                        </div>
+                        <div style="color: #64748b; font-size: 0.9em; margin-bottom: 15px;">
+                            ${result.subscription}
+                        </div>
+                        <div class="price-breakdown">
+                            <div class="price-item"><span>Cena za kWh:</span><span style="color: #1e40af; font-weight: 600;">${result.pricePerKwh.toFixed(2)} zł</span></div>
+                            ${result.monthlyCost > 0 ? `<div class="price-item"><span>Abonament:</span><span>${result.monthlyCost.toFixed(2)} zł/mies</span></div>` : ''}
+                            <div class="price-item"><span>Energia (${userSettings.monthlyUsage} kWh):</span><span>${result.energyCost.toFixed(2)} zł</span></div>
+                            <div class="price-item" style="background: #f0fdf4; margin: 10px -15px -15px -15px; padding: 15px; border-radius: 0 0 10px 10px;">
+                                <span><strong>Razem:</strong></span>
+                                <span><strong style="color: #059669; font-size: 1.3em;">${result.totalCost.toFixed(2)} zł/mies</strong></span>
+                            </div>
+                        </div>
+                    `;
+                    categoryGrid.appendChild(card);
+                });
+            });
+
+            console.log('✅ Category results displayed');
+        }
+
         // Display results
         function calculateAndDisplay() {
             console.log('📊 calculateAndDisplay: START');
             if (!pricingData) return;
 
+            // Check for category view
+            if (userSettings.mode === 'monthly' && userSettings.monthlyView === 'category') {
+                displayCategoryResults();
+                return;
+            }
+
+            // Show best option card in normal view
+            const bestCard = document.querySelector('.best-option');
+            if (bestCard) bestCard.style.display = 'block';
+
             const results = calculateCosts();
             console.log('📊 calculateAndDisplay: results =', results.length);
-            
+
             if (results.length > 0) {
                 const best = results[0];
                 const bestDetails = document.getElementById('bestDetails');
