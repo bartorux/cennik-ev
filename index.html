@@ -1054,6 +1054,16 @@
             return num;
         }
 
+        // Zapisz ustawienia do localStorage (unikaj duplikacji)
+        function saveSettings() {
+            try {
+                saveSettings();
+            } catch (error) {
+                console.error('❌ Błąd zapisu ustawień:', error);
+                // Safari w trybie prywatnym może zablokować localStorage
+            }
+        }
+
         // Pokazywanie błędów
         function showError(message) {
             const errorContainer = document.getElementById('errorContainer');
@@ -1107,7 +1117,7 @@
         }
 
         function saveSettings() {
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
             alert('✅ Ustawienia zapisane!');
         }
 
@@ -1134,7 +1144,7 @@
             console.log('Promocje:', userSettings.usePromos ? 'włączone' : 'wyłączone');
 
             // Auto-zapisz ustawienia
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
 
             updatePromosHint();
             calculateAndDisplay();
@@ -1307,7 +1317,7 @@
             userSettings.mode = mode;
 
             // Auto-zapisz ustawienia
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
 
             document.getElementById('modeInstant').classList.toggle('active', mode === 'instant');
             document.getElementById('modeMonthly').classList.toggle('active', mode === 'monthly');
@@ -1343,7 +1353,7 @@
         // Monthly view switching
         function setMonthlyView(view) {
             userSettings.monthlyView = view;
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
 
             document.getElementById('viewCategoryBtn').classList.toggle('active', view === 'category');
             document.getElementById('viewTotalBtn').classList.toggle('active', view === 'total');
@@ -1456,7 +1466,7 @@
             console.log(`Aktualna lista subskrypcji:`, userSettings.subscriptions);
 
             // Auto-zapisz ustawienia
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
 
             // Zaktualizuj UI - podświetl wybraną opcję
             document.querySelectorAll(`input[name="${operatorKey}_plan"]`).forEach(radio => {
@@ -2061,7 +2071,7 @@
         document.getElementById('instantKwh').addEventListener('input', (e) => {
             userSettings.instantKwh = validateInput(e.target.value, 0, 150, 40);
             e.target.value = userSettings.instantKwh; // Zaktualizuj UI
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
             if (userSettings.mode === 'instant') {
                 calculateAndDisplay();
             }
@@ -2070,7 +2080,7 @@
         document.getElementsByName('chargerType').forEach(radio => {
             radio.addEventListener('change', (e) => {
                 userSettings.chargerType = e.target.value;
-                localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+                saveSettings();
                 if (userSettings.mode === 'instant') {
                     calculateAndDisplay();
                 }
@@ -2082,7 +2092,7 @@
             e.target.value = userSettings.monthlyUsage; // Zaktualizuj UI
             document.getElementById('monthlyUsageRange').value = userSettings.monthlyUsage;
             updatePercentageUI(); // Aktualizuj kWh w labelkach
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2092,7 +2102,7 @@
             userSettings.monthlyUsage = parseFloat(e.target.value);
             document.getElementById('monthlyUsage').value = userSettings.monthlyUsage;
             updatePercentageUI(); // Aktualizuj kWh w labelkach
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2111,7 +2121,7 @@
                 redistributePercents(['dc', 'dcMid', 'hpc']);
             }
 
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2129,7 +2139,7 @@
                 redistributePercents(['ac', 'dcMid', 'hpc']);
             }
 
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2147,7 +2157,7 @@
                 redistributePercents(['ac', 'dc', 'hpc']);
             }
 
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2165,7 +2175,7 @@
                 redistributePercents(['ac', 'dc', 'dcMid']);
             }
 
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2175,7 +2185,7 @@
         document.getElementById('acPercentSlider').addEventListener('input', (e) => {
             userSettings.acPercent = parseInt(e.target.value);
             normalizePercents('ac');
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2184,7 +2194,7 @@
         document.getElementById('dcPercentSlider').addEventListener('input', (e) => {
             userSettings.dcPercent = parseInt(e.target.value);
             normalizePercents('dc');
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2193,7 +2203,7 @@
         document.getElementById('dcMidPercentSlider').addEventListener('input', (e) => {
             userSettings.dcMidPercent = parseInt(e.target.value);
             normalizePercents('dcMid');
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2202,7 +2212,7 @@
         document.getElementById('hpcPercentSlider').addEventListener('input', (e) => {
             userSettings.hpcPercent = parseInt(e.target.value);
             normalizePercents('hpc');
-            localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
+            saveSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
