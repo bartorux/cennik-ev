@@ -1055,7 +1055,7 @@
         }
 
         // Zapisz ustawienia do localStorage (unikaj duplikacji)
-        function saveSettings() {
+        function saveUserSettings() {
             try {
                 localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
             } catch (error) {
@@ -1116,11 +1116,6 @@
             }
         }
 
-        function saveSettings() {
-            saveSettings();
-            alert('✅ Ustawienia zapisane!');
-        }
-
         function resetSettings() {
             localStorage.removeItem('evChargingSettings');
             userSettings = {
@@ -1144,7 +1139,7 @@
             console.log('Promocje:', userSettings.usePromos ? 'włączone' : 'wyłączone');
 
             // Auto-zapisz ustawienia
-            saveSettings();
+            saveUserSettings();
 
             updatePromosHint();
             calculateAndDisplay();
@@ -1317,7 +1312,7 @@
             userSettings.mode = mode;
 
             // Auto-zapisz ustawienia
-            saveSettings();
+            saveUserSettings();
 
             document.getElementById('modeInstant').classList.toggle('active', mode === 'instant');
             document.getElementById('modeMonthly').classList.toggle('active', mode === 'monthly');
@@ -1353,7 +1348,7 @@
         // Monthly view switching
         function setMonthlyView(view) {
             userSettings.monthlyView = view;
-            saveSettings();
+            saveUserSettings();
 
             document.getElementById('viewCategoryBtn').classList.toggle('active', view === 'category');
             document.getElementById('viewTotalBtn').classList.toggle('active', view === 'total');
@@ -1466,7 +1461,7 @@
             console.log(`Aktualna lista subskrypcji:`, userSettings.subscriptions);
 
             // Auto-zapisz ustawienia
-            saveSettings();
+            saveUserSettings();
 
             // Zaktualizuj UI - podświetl wybraną opcję
             document.querySelectorAll(`input[name="${operatorKey}_plan"]`).forEach(radio => {
@@ -2071,7 +2066,7 @@
         document.getElementById('instantKwh').addEventListener('input', (e) => {
             userSettings.instantKwh = validateInput(e.target.value, 0, 150, 40);
             e.target.value = userSettings.instantKwh; // Zaktualizuj UI
-            saveSettings();
+            saveUserSettings();
             if (userSettings.mode === 'instant') {
                 calculateAndDisplay();
             }
@@ -2080,7 +2075,7 @@
         document.getElementsByName('chargerType').forEach(radio => {
             radio.addEventListener('change', (e) => {
                 userSettings.chargerType = e.target.value;
-                saveSettings();
+                saveUserSettings();
                 if (userSettings.mode === 'instant') {
                     calculateAndDisplay();
                 }
@@ -2092,7 +2087,7 @@
             e.target.value = userSettings.monthlyUsage; // Zaktualizuj UI
             document.getElementById('monthlyUsageRange').value = userSettings.monthlyUsage;
             updatePercentageUI(); // Aktualizuj kWh w labelkach
-            saveSettings();
+            saveUserSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2102,7 +2097,7 @@
             userSettings.monthlyUsage = parseFloat(e.target.value);
             document.getElementById('monthlyUsage').value = userSettings.monthlyUsage;
             updatePercentageUI(); // Aktualizuj kWh w labelkach
-            saveSettings();
+            saveUserSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2121,7 +2116,7 @@
                 redistributePercents(['dc', 'dcMid', 'hpc']);
             }
 
-            saveSettings();
+            saveUserSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2139,7 +2134,7 @@
                 redistributePercents(['ac', 'dcMid', 'hpc']);
             }
 
-            saveSettings();
+            saveUserSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2157,7 +2152,7 @@
                 redistributePercents(['ac', 'dc', 'hpc']);
             }
 
-            saveSettings();
+            saveUserSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2175,7 +2170,7 @@
                 redistributePercents(['ac', 'dc', 'dcMid']);
             }
 
-            saveSettings();
+            saveUserSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2185,7 +2180,7 @@
         document.getElementById('acPercentSlider').addEventListener('input', (e) => {
             userSettings.acPercent = parseInt(e.target.value);
             normalizePercents('ac');
-            saveSettings();
+            saveUserSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2194,7 +2189,7 @@
         document.getElementById('dcPercentSlider').addEventListener('input', (e) => {
             userSettings.dcPercent = parseInt(e.target.value);
             normalizePercents('dc');
-            saveSettings();
+            saveUserSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2203,7 +2198,7 @@
         document.getElementById('dcMidPercentSlider').addEventListener('input', (e) => {
             userSettings.dcMidPercent = parseInt(e.target.value);
             normalizePercents('dcMid');
-            saveSettings();
+            saveUserSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
@@ -2212,7 +2207,7 @@
         document.getElementById('hpcPercentSlider').addEventListener('input', (e) => {
             userSettings.hpcPercent = parseInt(e.target.value);
             normalizePercents('hpc');
-            saveSettings();
+            saveUserSettings();
             if (userSettings.mode === 'monthly') {
                 calculateAndDisplay();
             }
