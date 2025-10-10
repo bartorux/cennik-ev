@@ -1038,6 +1038,22 @@
             }
         }
 
+        // Walidacja wartości inputu (wymusza min/max)
+        function validateInput(value, min, max, defaultValue = min) {
+            const num = parseFloat(value);
+
+            // Sprawdź czy to prawidłowa liczba
+            if (isNaN(num) || !isFinite(num)) {
+                return defaultValue;
+            }
+
+            // Wymusz limity
+            if (num < min) return min;
+            if (num > max) return max;
+
+            return num;
+        }
+
         // Pokazywanie błędów
         function showError(message) {
             const errorContainer = document.getElementById('errorContainer');
@@ -2043,7 +2059,8 @@
 
         // Event listeners
         document.getElementById('instantKwh').addEventListener('input', (e) => {
-            userSettings.instantKwh = parseFloat(e.target.value) || 0;
+            userSettings.instantKwh = validateInput(e.target.value, 0, 150, 40);
+            e.target.value = userSettings.instantKwh; // Zaktualizuj UI
             localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
             if (userSettings.mode === 'instant') {
                 calculateAndDisplay();
@@ -2061,7 +2078,8 @@
         });
 
         document.getElementById('monthlyUsage').addEventListener('input', (e) => {
-            userSettings.monthlyUsage = parseFloat(e.target.value) || 0;
+            userSettings.monthlyUsage = validateInput(e.target.value, 0, 1000, 200);
+            e.target.value = userSettings.monthlyUsage; // Zaktualizuj UI
             document.getElementById('monthlyUsageRange').value = userSettings.monthlyUsage;
             updatePercentageUI(); // Aktualizuj kWh w labelkach
             localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
