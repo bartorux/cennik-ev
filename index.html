@@ -1057,7 +1057,7 @@
         // Zapisz ustawienia do localStorage (unikaj duplikacji)
         function saveSettings() {
             try {
-                saveSettings();
+                localStorage.setItem('evChargingSettings', JSON.stringify(userSettings));
             } catch (error) {
                 console.error('❌ Błąd zapisu ustawień:', error);
                 // Safari w trybie prywatnym może zablokować localStorage
