@@ -769,14 +769,23 @@
         // Ładowanie danych cenowych z pliku JSON
         async function loadPricingData() {
             try {
-                // Próba załadowania pliku - GitHub Pages wymaga pełnej ścieżki
-                const response = await fetch('pricing-data.json?t=' + Date.now());
+                // Próba załadowania pliku z cache-busting
+                console.log('🔄 Ładowanie pricing-data.json...');
+                const response = await fetch('pricing-data.json?t=' + Date.now(), {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+
+                console.log('📡 Response status:', response.status, response.statusText);
 
                 if (!response.ok) {
                     throw new Error(`Nie można pobrać danych cenowych (HTTP ${response.status})`);
                 }
-                
+
                 pricingData = await response.json();
+                console.log('📦 Otrzymano dane:', Object.keys(pricingData));
                 
                 // Zaktualizuj status
                 updateStatusBar();
