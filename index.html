@@ -1817,9 +1817,10 @@
                             ${breakEvenBadge ? `<br>${breakEvenBadge}` : ''}
                         </div>
                         <div class="price-breakdown">
-                            ${result.prices.ac ? `<div class="price-item"><span>AC:</span><span>${result.prices.ac.toFixed(2)} zł/kWh</span></div>` : ''}
-                            ${result.prices.dc ? `<div class="price-item"><span>DC:</span><span>${result.prices.dc.toFixed(2)} zł/kWh</span></div>` : ''}
-                            ${result.prices.hpc ? `<div class="price-item"><span>HPC:</span><span>${result.prices.hpc.toFixed(2)} zł/kWh</span></div>` : ''}
+                            ${result.prices.ac && result.prices.ac < 999 ? `<div class="price-item"><span>AC:</span><span>${result.prices.ac.toFixed(2)} zł/kWh</span></div>` : ''}
+                            ${result.prices.dc && result.prices.dc < 999 ? `<div class="price-item"><span>DC:</span><span>${result.prices.dc.toFixed(2)} zł/kWh</span></div>` : ''}
+                            ${result.prices.dc_mid && result.prices.dc_mid < 999 ? `<div class="price-item"><span>DC Mid:</span><span>${result.prices.dc_mid.toFixed(2)} zł/kWh</span></div>` : ''}
+                            ${result.prices.hpc && result.prices.hpc < 999 ? `<div class="price-item"><span>HPC:</span><span>${result.prices.hpc.toFixed(2)} zł/kWh</span></div>` : ''}
                             ${result.monthlyCost > 0 ? `<div class="price-item"><span>Abonament:</span><span>${result.monthlyCost.toFixed(2)} zł</span></div>` : ''}
                             <div class="price-item"><span>Razem:</span><span>${result.totalCost.toFixed(2)} zł/mies</span></div>
                         </div>
