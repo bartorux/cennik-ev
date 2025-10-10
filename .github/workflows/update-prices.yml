@@ -11,6 +11,8 @@ on:
 jobs:
   update-prices:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Uprawnienia do commit i push
 
     steps:
       - name: Checkout repozytorium
