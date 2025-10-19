@@ -1,5 +1,5 @@
 {
-  "lastUpdate": "2025-10-19T12:49:40.114029",
+  "lastUpdate": "2025-10-19T18:34:20.758924",
   "operators": {
     "greenway": {
       "name": "GreenWay",
@@ -65,22 +65,7 @@
           "benefits": []
         }
       ],
-      "promotions": [
-        {
-          "name": "Promocja cenowa -25%",
-          "validFrom": "2025-10-02",
-          "validTo": "2025-11-03",
-          "prices": {
-            "ac": 1.46,
-            "dc": 2.02,
-            "dc_mid": 2.17,
-            "hpc": 2.39
-          },
-          "conditions": [
-            "Obowiązuje dla wszystkich użytkowników"
-          ]
-        }
-      ]
+      "promotions": []
     }
   }
 }
